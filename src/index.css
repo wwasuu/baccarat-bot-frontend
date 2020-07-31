@@ -11,3 +11,54 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.ui.card, .ui.cards>.card {
+  box-shadow: none !important;
+  background-color: hsl(0, 0%, 18%);
+}
+.ui.card>.content>.header, .ui.cards>.card>.content>.header {
+  color: #fff  !important;
+}
+
+.ui.card>.content>.description, .ui.cards>.card>.content>.description {
+  color: #fff  !important;
+  font-size: .9rem;
+}
+
+.ui.input>input, .ui.input>input:focus {
+  background-color: hsl(0, 0%, 18%);
+  color: #fff;
+}
+
+.ui.segment {
+  background-color:rgb(33, 33, 33);
+}
+
+.ui.form input:not([type]), .ui.form input[type=date], .ui.form input[type=datetime-local], .ui.form input[type=email], .ui.form input[type=file], .ui.form input[type=number], .ui.form input[type=password], .ui.form input[type=search], .ui.form input[type=tel], .ui.form input[type=text], .ui.form input[type=time], .ui.form input[type=url], .ui.form input[type=password]:focus, .ui.form input[type=text]:focus {
+  background-color: hsl(0, 0%, 18%);
+  color: #fff;
+}
+
+.ui.icon.input>i.icon {
+  color: #fff;
+}
+
+.ui.text.container {
+  margin-bottom: 36px;
+}
+
+.ui.header+p {
+  font-size: .95rem;
+}
+
+.ui.button, .ui.selection.dropdown, .ui.dropdown .menu {
+  background: hsl(0, 0%, 18%);
+  color: #fff;
+}
+
+.ui.progress {
+  background: hsl(0, 0%, 18%);
+}
+.ui.selection.visible.dropdown>.text:not(.default), .ui.dropdown .menu .selected.item, .ui.dropdown.selected, .ui.dropdown .menu>.item, .ui.dropdown .menu>.item:hover {
+  color: #fff;
+}
