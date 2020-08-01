@@ -39,10 +39,6 @@ const BotInformation = () => {
     }
   }
 
-  function play() {
-    history.push("/bot");
-  }
-
   async function getWallet() {
     try {
       if (!auth.isLoggedIn) return;
@@ -65,8 +61,20 @@ const BotInformation = () => {
   }
 
   async function start() {
-    const res = await axios.post("https://api.ibot.bet/bot", {...botSetting, username: auth.username });
-    setBotState("START")
+    try {
+      const {
+        data: { data, success },
+      } = await axios.post("https://api.ibot.bet/bot", {
+        ...botSetting,
+        username: auth.username,
+      });
+      if (success) {
+        setBotState("START");
+        history.push("/bot");
+      }
+    } catch (error) {
+      console.log("Error while call start()", error);
+    }
   }
 
   const chart = {

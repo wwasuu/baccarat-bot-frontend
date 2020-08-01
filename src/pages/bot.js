@@ -1,20 +1,15 @@
 import axios from "axios";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
-import {
-  Card,
-  Container,
-  Grid,
-  Header
-} from "semantic-ui-react";
+import { Card, Container, Grid, Header } from "semantic-ui-react";
 import BotInformation from "../components/BotInformation";
 import Navbar from "../components/Navbar";
 
-function compare( a, b ) {
-  if ( a.id < b.id ){
+function compare(a, b) {
+  if (a.id < b.id) {
     return -1;
   }
-  if ( a.id > b.id ){
+  if (a.id > b.id) {
     return 1;
   }
   return 0;
@@ -26,8 +21,8 @@ const Setting = () => {
       name: "series 1",
       data: [1, 2, -1, -2, 3, 4, 3],
     },
-  ])
-  var [start, setStart] = useState(10)
+  ]);
+  var [start, setStart] = useState(5);
   const chart = {
     options: {
       chart: {
@@ -93,42 +88,39 @@ const Setting = () => {
   };
 
   useEffect(() => {
-    getBotTransaction()
-  }, [])
+    getBotTransaction();
+  }, []);
 
   async function getBotTransaction() {
     try {
       const {
         data: { data, success },
       } = await axios.get("https://api.ibot.bet/bot_transaction");
-      let newData = data.sort(compare)
-      let graph = 
-                  [
-                    {
-                      name: "series 1",
-                      data: [],
-                    },
-                  ]
-      console.log(newData);
+      let newData = data.sort(compare);
+      let graph = [
+        {
+          name: "series 1",
+          data: [],
+        },
+      ];
       let i = start;
-      let t = 0
-      newData.forEach(element => {
-        
-        if(element.win_result === 'WIN'){
-          i++
-          graph[0].data.push(i)
-        }else if(element.win_result == 'LOSE'){
-          i--
-          graph[0].data.push(i)
-        }else{
-          graph[0].data.push(i)
+      let t = 0;
+      newData.forEach((element) => {
+        if (element.win_result === "WIN") {
+          i++;
+          graph[0].data.push(i);
+        } else if (element.win_result == "LOSE") {
+          i--;
+          graph[0].data.push(i);
+        } else {
+          graph[0].data.push(i);
         }
-        if(t === 1){
-          setStart(i)
+        if (t === 1) {
+          setStart(i);
         }
-        t++
+        t++;
       });
-      setGraph(graph)
+      setGraph(graph);
     } catch (error) {
       console.log("error while call getBotTransaction()", error);
     }
@@ -136,53 +128,53 @@ const Setting = () => {
 
   return (
     <>
-    <Navbar />
-    <Grid
-      style={{
-        backgroundColor: "#212121",
-        height: "100vh",
-        color: "#fff",
-        overflow: "hidden",
-      }}
-    >
-      <Grid.Row columns={2}>
-        <Grid.Column
-          style={{ padding: "24px", overflow: "auto", height: "100vh" }}
-        >
-          <BotInformation />
-        </Grid.Column>
-        <Grid.Column
-          style={{ padding: "24px", overflow: "auto", height: "100vh" }}
-        >
-          <Container text fluid>
-            <Header as="h2" style={{ color: "#fff" }}>
-              โปรแกรมเติมพันอัตโนมัติ
-            </Header>
-            <p>กำลังเล่นบอทบาคาร่า</p>
+      <Navbar />
+      <Grid
+        style={{
+          backgroundColor: "#212121",
+          height: "100vh",
+          color: "#fff",
+          overflow: "hidden",
+        }}
+      >
+        <Grid.Row columns={2}>
+          <Grid.Column
+            style={{ padding: "24px", overflow: "auto", height: "100vh" }}
+          >
+            <BotInformation />
+          </Grid.Column>
+          <Grid.Column
+            style={{ padding: "24px", overflow: "auto", height: "100vh" }}
+          >
+            <Container text fluid>
+              <Header as="h2" style={{ color: "#fff" }}>
+                โปรแกรมเติมพันอัตโนมัติ
+              </Header>
+              <p>กำลังเล่นบอทบาคาร่า</p>
 
-            <Card fluid>
-              <Chart
-                type="area"
-                options={chart.options}
-                series={graphData}
-                height="240"
-              />
-            </Card>
-          </Container>
-          <Container text fluid>
-            <Header as="h2" style={{ color: "#fff" }}>
-              เซียนโรโบ แอดไวเซอร์
-            </Header>
-            <Card.Group itemsPerRow={4}>
-              <Card header="xxxxx-xx" description="xxxxx-xx" />
-              <Card header={<div>123</div>} description="ผลการวิเคราะห์" />
-              <Card header="+10" description="ความน่าเล่น" />
-              <Card header="56.45%" description="โอกาสทำกำไร" />
-            </Card.Group>
-          </Container>
-        </Grid.Column>
-      </Grid.Row>
-    </Grid>
+              <Card fluid>
+                <Chart
+                  type="area"
+                  options={chart.options}
+                  series={graphData}
+                  height="240"
+                />
+              </Card>
+            </Container>
+            <Container text fluid>
+              <Header as="h2" style={{ color: "#fff" }}>
+                เซียนโรโบ แอดไวเซอร์
+              </Header>
+              <Card.Group itemsPerRow={4}>
+                <Card header="xxxxx-xx" description="xxxxx-xx" />
+                <Card header={<div>123</div>} description="ผลการวิเคราะห์" />
+                <Card header="+10" description="ความน่าเล่น" />
+                <Card header="56.45%" description="โอกาสทำกำไร" />
+              </Card.Group>
+            </Container>
+          </Grid.Column>
+        </Grid.Row>
+      </Grid>
     </>
   );
 };

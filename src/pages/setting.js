@@ -220,11 +220,11 @@ const Setting = () => {
                 หรือวันละครั้งเพื่อลงทุนระยะยาว
               </p>
               <Select
-                defaultValue={botSetting.profit}
-                value={botSetting.profit}
+                defaultValue={botSetting.profit_percent}
+                value={botSetting.profit_percent}
                 onChange={(e) =>
                   dispatch(
-                    bot_setting_set({ ...botSetting, profit: e.target.value })
+                    bot_setting_set({ ...botSetting, profit_percent: e.target.value })
                   )
                 }
                 options={[
@@ -249,11 +249,11 @@ const Setting = () => {
               </Header>
               <p>ข้อแนะนำ</p>
               <Select
-                defaultValue={botSetting.loss}
-                value={botSetting.loss}
+                defaultValue={botSetting.loss_percent}
+                value={botSetting.loss_percent}
                 onChange={(e) =>
                   dispatch(
-                    bot_setting_set({ ...botSetting, loss: e.target.value })
+                    bot_setting_set({ ...botSetting, loss_percent: e.target.value })
                   )
                 }
                 options={[
