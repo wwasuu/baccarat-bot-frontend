@@ -10,7 +10,24 @@ import {
 import BotInformation from "../components/BotInformation";
 import Navbar from "../components/Navbar";
 
+function compare( a, b ) {
+  if ( a.id < b.id ){
+    return -1;
+  }
+  if ( a.id > b.id ){
+    return 1;
+  }
+  return 0;
+}
+
 const Setting = () => {
+  var [graphData, setGraph] = useState([
+    {
+      name: "series 1",
+      data: [1, 2, -1, -2, 3, 4, 3],
+    },
+  ])
+  var [start, setStart] = useState(10)
   const chart = {
     options: {
       chart: {
@@ -70,7 +87,7 @@ const Setting = () => {
       {
         name: "series 1",
         // data: [1, 2, -1, -2, 3, 4, 3],
-        data: [45, 52, 38, 24, 33, 26, 21, 20, 6, 8, 15, 10],
+        data: [1, 2, -1, -2, 3, 4, 3],
       },
     ],
   };
@@ -84,7 +101,34 @@ const Setting = () => {
       const {
         data: { data, success },
       } = await axios.get("https://api.ibot.bet/bot_transaction");
-      console.log(data);
+      let newData = data.sort(compare)
+      let graph = 
+                  [
+                    {
+                      name: "series 1",
+                      data: [],
+                    },
+                  ]
+      console.log(newData);
+      let i = start;
+      let t = 0
+      newData.forEach(element => {
+        
+        if(element.win_result === 'WIN'){
+          i++
+          graph[0].data.push(i)
+        }else if(element.win_result == 'LOSE'){
+          i--
+          graph[0].data.push(i)
+        }else{
+          graph[0].data.push(i)
+        }
+        if(t === 1){
+          setStart(i)
+        }
+        t++
+      });
+      setGraph(graph)
     } catch (error) {
       console.log("error while call getBotTransaction()", error);
     }
@@ -120,7 +164,7 @@ const Setting = () => {
               <Chart
                 type="area"
                 options={chart.options}
-                series={chart.series}
+                series={graphData}
                 height="240"
               />
             </Card>
