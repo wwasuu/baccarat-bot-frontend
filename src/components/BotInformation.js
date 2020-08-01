@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import CountUp from "react-countup";
+import { useLocation } from "react-router-dom";
 import {
   Button,
   Container,
@@ -11,17 +12,32 @@ import {
 } from "semantic-ui-react";
 import { useHistory } from "react-router-dom";
 import Chart from "react-apexcharts";
-import axios from "axios"
-import { useSelector } from 'react-redux'
+import axios from "axios";
+import { useSelector, useDispatch } from "react-redux";
+import { balance_set, bot_setting_set, bot_setting_init } from "../store";
 
 const BotInformation = () => {
+  const location = useLocation();
   const history = useHistory();
-  const [balance, setBalance] = useState(0.00)
-  const auth = useSelector(state => state.auth)
+  const auth = useSelector((state) => state.auth);
+  const balance = useSelector((state) => state.balance);
+  const botSetting = useSelector((state) => state.botSetting);
+  const dispatch = useDispatch();
+  const [botState, setBotState] = useState("SETTING");
 
   useEffect(() => {
-    getWallet()
-  }, [auth])
+    initBotState();
+  }, []);
+
+  useEffect(() => {
+    getWallet();
+  }, [auth.isLoggedIn]);
+
+  function initBotState() {
+    if (location.pathname === "/bot") {
+      setBotState("START");
+    }
+  }
 
   function play() {
     history.push("/bot");
@@ -29,15 +45,28 @@ const BotInformation = () => {
 
   async function getWallet() {
     try {
-      if (!auth) return
-      const id = auth.id
-      const {  data: { data, success } } = await axios.get(`https://api.ibot.bet/wallet/${id}`)
+      if (!auth.isLoggedIn) return;
+      const id = auth.id;
+      const {
+        data: { data, success },
+      } = await axios.get(`https://api.ibot.bet/wallet/${id}`);
       if (success) {
-        setBalance(data.myWallet.MAIN_WALLET.chips.credit)
+        dispatch(balance_set(data.myWallet.MAIN_WALLET.chips.credit));
+        dispatch(
+          bot_setting_init({
+            ...botSetting,
+            init_wallet: data.myWallet.MAIN_WALLET.chips.credit,
+          })
+        );
       }
     } catch (error) {
-      console.log("error while call getWallet()", error)
+      console.log("error while call getWallet()", error);
     }
+  }
+
+  async function start() {
+    const res = await axios.post("https://api.ibot.bet/bot", {...botSetting, username: auth.username });
+    setBotState("START")
   }
 
   const chart = {
@@ -110,21 +139,24 @@ const BotInformation = () => {
         <CountUp end={balance} separator="," decimals={2} />
       </Header>
       <div style={{ marginBottom: 24 }}>
-        {/* <Button icon>
-          <Icon name="arrow left" />
-        </Button> */}
-        <Button color="teal" icon labelPosition="left" onClick={play}>
-          เริ่ม
-          <Icon name="play" />
-        </Button>
-        <Button color="yellow" icon labelPosition="left">
-          <Icon name="pause" />
-          หยุด
-        </Button>
-        <Button color="red" icon labelPosition="left">
-          <Icon name="close" />
-          ปิด
-        </Button>
+        {botState === "SETTING" && (
+          <Button color="teal" icon labelPosition="left" onClick={start}>
+            เริ่ม
+            <Icon name="play" />
+          </Button>
+        )}
+        {(botState === "START" || botState === "STOP") && (
+          <>
+            <Button color="yellow" icon labelPosition="left">
+              <Icon name="pause" />
+              หยุด
+            </Button>
+            <Button color="red" icon labelPosition="left">
+              <Icon name="close" />
+              ปิด
+            </Button>
+          </>
+        )}
       </div>
       <div
         style={{
@@ -136,72 +168,76 @@ const BotInformation = () => {
         <div>ถอน: 0 ครั้ง (0 บาท)</div>
         <div>0/0 (0%)</div>
       </div>
-      <Progress percent={80} active progress color="teal" size="small" />
-      <Divider section />
-      <Card fluid>
-        <Chart
-          type="area"
-          options={chart.options}
-          series={chart.series}
-          height="240"
-        />
-      </Card>
-      <Divider section />
-      <p>การเชื่อมต่อ</p>
-      <Card.Group>
-        <Card>
-          <Card.Content>
-            <Card.Description style={{ marginBottom: 8 }}>
-              ZEAN AI
-            </Card.Description>
-            <Card.Meta>เชื่อมต่อแล้ว</Card.Meta>
-          </Card.Content>
-        </Card>
-        <Card>
-          <Card.Content>
-            <Card.Description style={{ marginBottom: 8 }}>
-              TRUTHBET
-            </Card.Description>
-            <Card.Meta>เชื่อมต่อแล้ว</Card.Meta>
-          </Card.Content>
-        </Card>
-      </Card.Group>
-      <Divider section />
-      <p>การตั้งค่า</p>
-      <Card.Group>
-        <Card>
-          <Card.Content>
-            <Card.Description style={{ marginBottom: 8 }}>
-              รูปแบบการเล่น
-            </Card.Description>
-            <Card.Meta>PLAYER/BANKER</Card.Meta>
-          </Card.Content>
-        </Card>
-        <Card>
-          <Card.Content>
-            <Card.Description style={{ marginBottom: 8 }}>
-              รูปแบบการเติมเงิน
-            </Card.Description>
-            <Card.Meta>Zean System</Card.Meta>
-          </Card.Content>
-        </Card>
-        <Card>
-          <Card.Content>
-            <Card.Description style={{ marginBottom: 8 }}>
-              ชิพเริ่มต้น
-            </Card.Description>
-            <Card.Meta>Zean System</Card.Meta>
-          </Card.Content>
-        </Card>
-        <Card>
-          <Card.Content>
-            <Card.Description style={{ marginBottom: 8 }}>
-              กำไรเป้าหมาย
-            </Card.Description>
-            <Card.Meta>5%</Card.Meta>
-          </Card.Content>
-        </Card>
-      </Card.Group>
+      <Progress percent={0} active progress color="teal" size="small" />
+      {(botState === "START" || botState === "STOP") && (
+        <>
+          <Divider section />
+          <Card fluid>
+            <Chart
+              type="area"
+              options={chart.options}
+              series={chart.series}
+              height="240"
+            />
+          </Card>
+          <Divider section />
+          <p>การเชื่อมต่อ</p>
+          <Card.Group>
+            <Card>
+              <Card.Content>
+                <Card.Description style={{ marginBottom: 8 }}>
+                  ZEAN AI
+                </Card.Description>
+                <Card.Meta>เชื่อมต่อแล้ว</Card.Meta>
+              </Card.Content>
+            </Card>
+            <Card>
+              <Card.Content>
+                <Card.Description style={{ marginBottom: 8 }}>
+                  TRUTHBET
+                </Card.Description>
+                <Card.Meta>เชื่อมต่อแล้ว</Card.Meta>
+              </Card.Content>
+            </Card>
+          </Card.Group>
+          <Divider section />
+          <p>การตั้งค่า</p>
+          <Card.Group>
+            <Card>
+              <Card.Content>
+                <Card.Description style={{ marginBottom: 8 }}>
+                  รูปแบบการเล่น
+                </Card.Description>
+                <Card.Meta>PLAYER/BANKER</Card.Meta>
+              </Card.Content>
+            </Card>
+            <Card>
+              <Card.Content>
+                <Card.Description style={{ marginBottom: 8 }}>
+                  รูปแบบการเติมเงิน
+                </Card.Description>
+                <Card.Meta>Zean System</Card.Meta>
+              </Card.Content>
+            </Card>
+            <Card>
+              <Card.Content>
+                <Card.Description style={{ marginBottom: 8 }}>
+                  ชิพเริ่มต้น
+                </Card.Description>
+                <Card.Meta>Zean System</Card.Meta>
+              </Card.Content>
+            </Card>
+            <Card>
+              <Card.Content>
+                <Card.Description style={{ marginBottom: 8 }}>
+                  กำไรเป้าหมาย
+                </Card.Description>
+                <Card.Meta>5%</Card.Meta>
+              </Card.Content>
+            </Card>
+          </Card.Group>
+        </>
+      )}
     </Container>
   );
 };

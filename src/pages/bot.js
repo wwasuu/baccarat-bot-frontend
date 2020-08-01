@@ -1,19 +1,14 @@
-import React, { useState, useEffect } from "react";
-import {
-  Grid,
-  Container,
-  Header,
-  Card,
-  Progress,
-  Button,
-  Icon,
-  Select,
-  Form,
-  Table,
-} from "semantic-ui-react";
-import Chart from "react-apexcharts";
 import axios from "axios";
+import React, { useEffect } from "react";
+import Chart from "react-apexcharts";
+import {
+  Card,
+  Container,
+  Grid,
+  Header
+} from "semantic-ui-react";
 import BotInformation from "../components/BotInformation";
+import Navbar from "../components/Navbar";
 
 const Setting = () => {
   const chart = {
@@ -96,6 +91,8 @@ const Setting = () => {
   }
 
   return (
+    <>
+    <Navbar />
     <Grid
       style={{
         backgroundColor: "#212121",
@@ -142,6 +139,7 @@ const Setting = () => {
         </Grid.Column>
       </Grid.Row>
     </Grid>
+    </>
   );
 };
 

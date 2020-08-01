@@ -74,7 +74,7 @@ code {
 }
 
 .ui.card.active {
-  background-color: #00b5ad;
+  background-color: #00b5ad !important;
 }
 
 .ui.statistic>.value, .ui.statistics .statistic>.value {
@@ -96,4 +96,18 @@ code {
 
 .ui.form .field {
   color: #fff;
+}
+
+.navbar {
+  position: fixed;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px;
+  z-index: 100;
+}
+
+.ui.cards a.card:hover, .ui.link.card:hover, .ui.link.cards .card:hover, a.ui.card:hover {
+  background-color: #cacbcd;
+  transform: none;
 }

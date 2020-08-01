@@ -1,25 +1,29 @@
-import React from "react";
+import axios from "axios";
+import Cookies from "js-cookie";
+import React, { useState } from "react";
+import CountUp from "react-countup";
+import { useDispatch, useSelector } from "react-redux";
+import { useHistory } from "react-router-dom";
 import {
   Button,
+  Container,
   Form,
   Grid,
   Header,
-  Container,
-  Segment,
-  Statistic,
   Icon,
+  Segment,
+  Statistic
 } from "semantic-ui-react";
-import { useHistory } from "react-router-dom";
-import CountUp from "react-countup";
-import axios from "axios";
-import { useDispatch } from "react-redux";
-import Cookies from "js-cookie";
-import { auth_login, auth_loading } from "../../store";
+import { auth_loading, auth_login } from "../../store";
 
 const Login = () => {
   const history = useHistory();
   const dispatch = useDispatch();
-  function submit() {}
+  const auth = useSelector(state => state.auth)
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
+
+  
 
   async function login() {
     try {
@@ -27,8 +31,8 @@ const Login = () => {
       const {
         data: { data, success },
       } = await axios.post("https://api.ibot.bet/login", {
-        username: "testf111",
-        password: "filmmlkn1996",
+        username,
+        password,
       });
       if (success) {
         Cookies.set(
@@ -160,6 +164,7 @@ const Login = () => {
                 icon="user"
                 iconPosition="left"
                 placeholder="Username"
+                onChange={e => setUsername(e.target.value)}
               />
               <Form.Input
                 fluid
@@ -167,9 +172,10 @@ const Login = () => {
                 iconPosition="left"
                 placeholder="Password"
                 type="password"
+                onChange={e => setPassword(e.target.value)}
               />
 
-              <Button color="teal" fluid size="large" onClick={login}>
+              <Button color="teal" fluid size="large" onClick={login} loading={auth.loading}>
                 Login
               </Button>
             </Segment>
