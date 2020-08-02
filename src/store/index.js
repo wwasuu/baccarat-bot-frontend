@@ -13,6 +13,11 @@ const auth_loading = () => ({
   type: "AUTH/LOADING",
 });
 
+const auth_setbot = (payload) => ({
+  type: "AUTH/SET_BOT",
+  payload,
+});
+
 const initialAuthState = {
   id: "",
   bot_id: "",
@@ -21,6 +26,7 @@ const initialAuthState = {
   error: null,
   loading: false,
 };
+
 
 const balance_set = (payload) => ({
     type: "BALANCE/SET",
@@ -53,7 +59,14 @@ const initialBotSettingState = {
 };
 
 const auth = (state = initialAuthState, action) => {
+ 
   switch (action.type) {
+    case "AUTH/SET_BOT":
+      state = {
+        ...state,
+        bot_id: action.payload.id
+      }
+      break;
     case "AUTH/LOGIN":
       state = {
         id: action.payload.id,
@@ -78,9 +91,11 @@ const auth = (state = initialAuthState, action) => {
       state = initialAuthState;
       break;
     default:
+      console.log({...state, action: action.type})
       state = { ...state };
       break;
   }
+  
   return state;
 };
 
@@ -122,10 +137,30 @@ const balance = (state = initialBalanceState, action) => {
     return state;
   };
 
+  const initialBotTransaction = []
+
+  const bot_transaction_set = (payload) => ({
+    type: "BOT_TRANSACTION/SET",
+    payload: payload,
+  });
+
+  const botTransaction = (state = initialBotTransaction, action) => {
+    switch (action.type) {
+      case "BOT_TRANSACTION/SET":
+        state = action.payload;
+        break;
+      default:
+        state = [];
+        break;
+    }
+    return state;
+  };
+
 const rootReducer = combineReducers({
   auth,
   botSetting,
-  balance
+  balance,
+  botTransaction
 });
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
@@ -134,4 +169,4 @@ const store = createStore(rootReducer, composeEnhancers());
 
 export default store;
 
-export { auth_login, auth_loading, bot_setting_set, auth_logout, balance_set, bot_setting_init };
+export { auth_login, auth_loading, bot_setting_set, auth_logout, balance_set, bot_setting_init, bot_transaction_set, auth_setbot };

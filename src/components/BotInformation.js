@@ -14,7 +14,7 @@ import { useHistory } from "react-router-dom";
 import Chart from "react-apexcharts";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
-import { balance_set, bot_setting_set, bot_setting_init } from "../store";
+import { balance_set, bot_setting_set, bot_setting_init, auth_setbot } from "../store";
 
 const BotInformation = () => {
   const location = useLocation();
@@ -22,6 +22,7 @@ const BotInformation = () => {
   const auth = useSelector((state) => state.auth);
   const balance = useSelector((state) => state.balance);
   const botSetting = useSelector((state) => state.botSetting);
+  const botTransaction = useSelector((state) => state.botTransaction);
   const dispatch = useDispatch();
   const [botState, setBotState] = useState("SETTING");
 
@@ -31,11 +32,38 @@ const BotInformation = () => {
 
   useEffect(() => {
     getWallet();
+    getUserBot()
   }, [auth.isLoggedIn]);
 
   function initBotState() {
     if (location.pathname === "/bot") {
       setBotState("START");
+    }
+    
+  }
+
+  async function getUserBot(){
+    try {
+      if (!auth.isLoggedIn) return;
+      const id = auth.id;
+      const {
+        data: { data, success },
+      } = await axios.get(`https://api.ibot.bet/user_bot/${id}`);
+      if (success && data.bot != null) {
+        dispatch(
+          bot_setting_init({
+            ...data.bot,
+          })
+        );
+        
+        dispatch(
+          auth_setbot({...data.bot})
+        )
+        setBotState("START");
+        history.push("/bot");
+      }
+    } catch (error) {
+      console.log("error while call get user bot()", error);
     }
   }
 
@@ -69,6 +97,15 @@ const BotInformation = () => {
         username: auth.username,
       });
       if (success) {
+        dispatch(
+          bot_setting_init({
+            ...data
+          })
+        );
+        
+        dispatch(
+          auth_setbot({...data})
+        )
         setBotState("START");
         history.push("/bot");
       }
@@ -184,30 +221,15 @@ const BotInformation = () => {
             <Chart
               type="area"
               options={chart.options}
-              series={chart.series}
+              series={ [
+                {
+                  name: "series1",
+                  data: botTransaction,
+                },
+              ]}
               height="240"
             />
           </Card>
-          <Divider section />
-          <p>การเชื่อมต่อ</p>
-          <Card.Group>
-            <Card>
-              <Card.Content>
-                <Card.Description style={{ marginBottom: 8 }}>
-                  ZEAN AI
-                </Card.Description>
-                <Card.Meta>เชื่อมต่อแล้ว</Card.Meta>
-              </Card.Content>
-            </Card>
-            <Card>
-              <Card.Content>
-                <Card.Description style={{ marginBottom: 8 }}>
-                  TRUTHBET
-                </Card.Description>
-                <Card.Meta>เชื่อมต่อแล้ว</Card.Meta>
-              </Card.Content>
-            </Card>
-          </Card.Group>
           <Divider section />
           <p>การตั้งค่า</p>
           <Card.Group>
