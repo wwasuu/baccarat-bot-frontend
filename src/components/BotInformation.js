@@ -283,11 +283,10 @@ const BotInformation = () => {
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
+          justifyContent: "flex-end",
           marginBottom: 8,
         }}
       >
-        <div>ถอน: 0 ครั้ง (0 บาท)</div>
         {botState === "START" || botState === "PAUSE" ? (
           <div>
             {calculateProfit()}/{calculateProfitTarget()} ({calculateProgressPercent()}%)
