@@ -14,7 +14,13 @@ import { useHistory } from "react-router-dom";
 import Chart from "react-apexcharts";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
-import { balance_set, bot_setting_set, bot_setting_init } from "../store";
+import { balance_set, bot_setting_init } from "../store";
+import {
+  initiateSocket,
+  disconnectSocket,
+  subscribeToChat,
+  sendMessage,
+} from "../utils/socket-io";
 
 const BotInformation = () => {
   const location = useLocation();
@@ -24,6 +30,17 @@ const BotInformation = () => {
   const botSetting = useSelector((state) => state.botSetting);
   const dispatch = useDispatch();
   const [botState, setBotState] = useState("SETTING");
+
+  useEffect(() => {
+    initiateSocket("user2");
+    subscribeToChat((err, data) => {
+      if (err) return;
+        console.log(data)
+    });
+    return () => {
+      disconnectSocket();
+    };
+  }, []);
 
   useEffect(() => {
     initBotState();
