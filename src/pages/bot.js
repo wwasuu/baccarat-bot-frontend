@@ -105,15 +105,16 @@ const Setting = () => {
     socket.on(room, (data) => {
       console.log(data);
       if (data.action === "bet_success") {
-        setBet(data.data);
+        setBet({...data.data, win_percent: data.win_percent});
       } else if (data.action === "bet_result") {
         dispatch(balance_set(data.wallet))
         if (data.isStop) {
           dispatch(bot_setting_clear())
           history.push("/setting")
         } else {
+          setBet({})
           // getUserBotTransaction();
-          // getBotTransaction();
+          getBotTransaction();
           setBotTrans()
           getUserTransaction();
         }        
@@ -151,22 +152,9 @@ const Setting = () => {
           data: [],
         },
       ];
-      let i = start;
-      let t = 0;
       newData.forEach((element) => {
-        if (element.win_result === "WIN") {
-          i++;
-          graph[0].data.push(i);
-        } else if (element.win_result === "LOSE") {
-          i--;
-          graph[0].data.push(i);
-        } else {
-          graph[0].data.push(i);
-        }
-        if (t === 1) {
-          setStart(i);
-        }
-        t++;
+        graph[0].data.push(element.point);
+        
       });
       setGraph(graph);
     } catch (error) {
@@ -220,7 +208,7 @@ const Setting = () => {
                       header={bet.current.bot}
                       description={bet.current.shoe + "-" + bet.current.round}
                     />
-                    <Card header="56.45%" description="โอกาสทำกำไร" />
+                    <Card header={bet.win_percent.toFixed(2) + '%'} description="โอกาสทำกำไร" />
                   </>
                 ) : (
                   <>
