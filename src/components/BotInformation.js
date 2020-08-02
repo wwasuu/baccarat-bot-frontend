@@ -125,11 +125,12 @@ const BotInformation = () => {
       } = await axios.get(`https://api.ibot.bet/wallet/${id}`);
       if (success) {
         dispatch(balance_set(data.myWallet.MAIN_WALLET.chips.credit));
-        // dispatch(
-        //   bot_setting_init({
-        //     ...botSetting,
-        //   })
-        // );
+        dispatch(
+          bot_setting_init({
+            ...botSetting,
+            init_wallet: data.myWallet.MAIN_WALLET.chips.credit
+          })
+        );
       }
     } catch (error) {
       console.log("error while call getWallet()", error);
