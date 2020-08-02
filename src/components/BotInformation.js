@@ -28,6 +28,16 @@ import {
   bot_transaction_set
 } from "../store";
 
+function compare(a, b) {
+  if (a.id < b.id) {
+    return -1;
+  }
+  if (a.id > b.id) {
+    return 1;
+  }
+  return 0;
+}
+
 const BotInformation = () => {
   const location = useLocation();
   const history = useHistory();
@@ -64,7 +74,8 @@ const BotInformation = () => {
         data: { data, success },
       } = await axios.get(`https://api.ibot.bet/user_bot_transaction/${bot_id}`);
       let transaction = [0];
-      data.forEach((element) => {
+      let newData = data.sort(compare);
+      newData.forEach((element) => {
         transaction.push(element.wallet - element.bot.init_wallet);
       });
     
