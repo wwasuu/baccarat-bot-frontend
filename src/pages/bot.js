@@ -146,7 +146,8 @@ const Setting = () => {
         data: { data, success },
       } = await axios.get(`https://api.ibot.bet/user_bot_transaction/${bot_id}`);
       let transaction = [0];
-      data.forEach((element) => {
+      let newData = data.sort(compare);
+      newData.forEach((element) => {
         transaction.push(element.wallet - element.bot.init_wallet);
       });
     

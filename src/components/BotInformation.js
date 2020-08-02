@@ -78,6 +78,8 @@ const BotInformation = () => {
       newData.forEach((element) => {
         transaction.push(element.wallet - element.bot.init_wallet);
       });
+
+      console.log(transaction)
     
       dispatch(
         bot_transaction_set([
