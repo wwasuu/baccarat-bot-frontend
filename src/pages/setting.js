@@ -219,12 +219,11 @@ const Setting = () => {
                 ข้อแนะนำการเลือกกำไรเป้าเริ่มต้นที่ 5-10% และเก็บเป็นรอบ
                 หรือวันละครั้งเพื่อลงทุนระยะยาว
               </p>
-              <Select
-                defaultValue={botSetting.profit_percent}
+              <Form.Select
                 value={botSetting.profit_percent}
-                onChange={(e) =>
+                onChange={(e,v) =>
                   dispatch(
-                    bot_setting_set({ ...botSetting, profit_percent: e.target.value })
+                    bot_setting_set({ ...botSetting, profit_percent: v.value })
                   )
                 }
                 options={[
@@ -248,13 +247,12 @@ const Setting = () => {
                 กำหนดขาดทุนไม่เกิน
               </Header>
               <p>ข้อแนะนำ</p>
-              <Select
-                defaultValue={botSetting.loss_percent}
+          
+              <Form.Select
                 value={botSetting.loss_percent}
-                onChange={(e) =>
-                  dispatch(
-                    bot_setting_set({ ...botSetting, loss_percent: e.target.value })
-                  )
+                onChange={(e, v) => {
+                  return dispatch(bot_setting_set({ ...botSetting, loss_percent: v.value }))
+                  }
                 }
                 options={[
                   { key: "1", value: 1, text: "1%" },

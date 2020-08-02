@@ -2,12 +2,13 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import { Card, Container, Grid, Header } from "semantic-ui-react";
+import { useHistory } from "react-router-dom";
 import BotInformation from "../components/BotInformation";
 import Navbar from "../components/Navbar";
 import { socket } from "./socket";
 import { useSelector, useDispatch } from "react-redux";
 import { Menu, Icon, Table } from "semantic-ui-react";
-import { bot_transaction_set } from "../store";
+import { bot_transaction_set, balance_set, bot_setting_clear } from "../store";
 
 function compare(a, b) {
   if (a.id < b.id) {
@@ -22,6 +23,7 @@ function compare(a, b) {
 const Setting = () => {
   const auth = useSelector((state) => state.auth);
   const dispatch = useDispatch();
+  const history = useHistory();
   var [tableData, setTableData] = useState([]);
   var [graphData, setGraph] = useState([
     {
@@ -85,13 +87,6 @@ const Setting = () => {
         enabled: false,
       },
     },
-    series: [
-      {
-        name: "series 1",
-        // data: [1, 2, -1, -2, 3, 4, 3],
-        data: [1, 2, -1, -2, 3, 4, 3],
-      },
-    ],
   };
 
   const [bet, setBet] = useState({});
@@ -100,37 +95,44 @@ const Setting = () => {
     getBotTransaction();
     getUserTransaction();
     getUserBotTransaction();
+    subscribeBot();
+  }, []);
 
-    socket.on("user2", (data) => {
+  function subscribeBot() {
+    const room = `user${auth.id}`
+    socket.on(room, (data) => {
       console.log(data);
       if (data.action === "bet_success") {
         setBet(data.data);
       } else if (data.action === "bet_result") {
-        getUserBotTransaction();
-        getBotTransaction();
-        getUserTransaction();
+        dispatch(balance_set(data.wallet))
+        if (data.isStop) {
+          dispatch(bot_setting_clear())
+          history.push("/setting")
+        } else {
+          getUserBotTransaction();
+          getBotTransaction();
+          getUserTransaction();
+        }        
       }
     });
-  }, []);
+  }
+
 
   async function getUserBotTransaction() {
     let bot_id = auth.bot_id;
-    if (auth.bot_id.id !== undefined) {
-      bot_id = auth.bot_id.id;
+    if (!bot_id) {
+      return
     }
-    console.log(bot_id);
     try {
-      let url = `https://api.ibot.bet/user_bot_transaction/${bot_id}`;
-      console.log(url);
       const {
         data: { data, success },
-      } = await axios.get(url);
-      console.log(data);
+      } = await axios.get(`https://api.ibot.bet/user_bot_transaction/${bot_id}`);
+    
       let transaction = [0];
       data.forEach((element) => {
         transaction.push(data.wallet - element.bot.init_wallet);
       });
-
       bot_transaction_set(transaction);
     } catch (error) {
       console.log("error while call getUserBotTransaction()", error);
@@ -139,7 +141,7 @@ const Setting = () => {
 
   async function getUserTransaction() {
     let id = auth.id;
-    console.log(id);
+    if (!id) return
     try {
       let url = `https://api.ibot.bet/user_transaction/${id}`;
       const {
@@ -278,7 +280,7 @@ const Setting = () => {
                 </Table.Body>
                 <Table.Footer>
                   <Table.Row>
-                    <Table.HeaderCell colSpan="3">
+                    <Table.HeaderCell colSpan="5">
                       <Menu inverted floated="right" pagination>
                         <Menu.Item as="a" icon>
                           <Icon inverted name="chevron left" />

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import CountUp from "react-countup";
-import { useLocation } from "react-router-dom";
 import {
   Button,
   Container,
@@ -10,16 +9,23 @@ import {
   Divider,
   Card,
 } from "semantic-ui-react";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import Chart from "react-apexcharts";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
+import numeral from "numeral";
 import {
   initiateSocket,
   disconnectSocket,
   subscribeToChat,
 } from "../utils/socket-io";
-import { balance_set, bot_setting_set, bot_setting_init, auth_setbot } from "../store";
+import {
+  balance_set,
+  bot_setting_set,
+  bot_setting_init,
+  auth_setbot,
+  bot_setting_clear,
+} from "../store";
 
 const BotInformation = () => {
   const location = useLocation();
@@ -48,17 +54,16 @@ const BotInformation = () => {
 
   useEffect(() => {
     getWallet();
-    getUserBot()
+    getUserBot();
   }, [auth.isLoggedIn]);
 
   function initBotState() {
     if (location.pathname === "/bot") {
       setBotState("START");
     }
-    
   }
 
-  async function getUserBot(){
+  async function getUserBot() {
     try {
       if (!auth.isLoggedIn) return;
       const id = auth.id;
@@ -71,10 +76,8 @@ const BotInformation = () => {
             ...data.bot,
           })
         );
-        
-        dispatch(
-          auth_setbot({...data.bot})
-        )
+
+        dispatch(auth_setbot({ ...data.bot }));
         setBotState("START");
         history.push("/bot");
       }
@@ -115,18 +118,81 @@ const BotInformation = () => {
       if (success) {
         dispatch(
           bot_setting_init({
-            ...data
+            ...data,
           })
         );
-        
-        dispatch(
-          auth_setbot({...data})
-        )
+
+        dispatch(auth_setbot({ ...data }));
         setBotState("START");
         history.push("/bot");
       }
     } catch (error) {
       console.log("Error while call start()", error);
+    }
+  }
+
+  async function pause() {
+    try {
+      const res = axios.post("https://api.ibot.bet/pause", {
+        username: auth.username,
+      });
+      setBotState("PAUSE");
+    } catch (error) {
+      console.log("Error while call pause()", error);
+    }
+  }
+
+  async function stop() {
+    try {
+      const res = axios.post("https://api.ibot.bet/stop", {
+        username: auth.username,
+      });
+      dispatch(bot_setting_clear());
+      history.push("/setting");
+    } catch (error) {
+      console.log("Error while call stop()", error);
+    }
+  }
+
+  function calculateProfit() {
+    return numeral(balance - botSetting.init_wallet).format("0,0");
+  }
+
+  function calculateProfitTarget() {
+    return numeral(botSetting.profit_threshold - balance).format("0,0");
+  }
+
+  function calculateProgressPercent() {
+    const target = botSetting.profit_threshold - balance
+    const current = balance - botSetting.init_wallet
+    return Math.round((100 * current) / target)
+  }
+
+  function renderBetSide() {
+    switch (botSetting.bet_side) {
+      case 1:
+        return "Player/Banker";
+      case 2:
+        return "Player เท่านั้น";
+      case 3:
+        return "Banker เท่านั้น";
+      default:
+        return "";
+    }
+  }
+  
+  function renderMoneySystem() {
+    switch (botSetting.money_system) {
+      case 1:
+        return "เติมเงินคงที่";
+      case 2:
+        return "การเดินเงินแบบทบ 5 ไม้ มาติงเกลพิเศษ";
+      case 3:
+        return "การเดินเงินแบบลาบูแชร์";
+      case 4:
+        return "การเดินเงินแบบ X sytem";
+      default:
+        return "";
     }
   }
 
@@ -185,12 +251,6 @@ const BotInformation = () => {
         enabled: false,
       },
     },
-    series: [
-      {
-        name: "series1",
-        data: [1, 2, -1, -2, 3, 4, 3],
-      },
-    ],
   };
 
   return (
@@ -200,24 +260,25 @@ const BotInformation = () => {
         <CountUp end={balance} separator="," decimals={2} />
       </Header>
       <div style={{ marginBottom: 24 }}>
-        {botState === "SETTING" && (
+        {(botState === "SETTING" || botState === "PAUSE") && (
           <Button color="teal" icon labelPosition="left" onClick={start}>
             เริ่ม
             <Icon name="play" />
           </Button>
         )}
-        {(botState === "START" || botState === "STOP") && (
-          <>
-            <Button color="yellow" icon labelPosition="left">
+        {(botState === "START") && (
+          
+            <Button color="yellow" icon labelPosition="left" onClick={pause}>
               <Icon name="pause" />
               หยุด
             </Button>
-            <Button color="red" icon labelPosition="left">
-              <Icon name="close" />
-              ปิด
-            </Button>
-          </>
         )}
+        { (botState === "START" || botState === "PAUSE")
+          && <Button color="red" icon labelPosition="left" onClick={stop}>
+          <Icon name="close" />
+          ปิด
+        </Button>
+        }
       </div>
       <div
         style={{
@@ -227,17 +288,29 @@ const BotInformation = () => {
         }}
       >
         <div>ถอน: 0 ครั้ง (0 บาท)</div>
-        <div>0/0 (0%)</div>
+        {botState === "START" || botState === "PAUSE" ? (
+          <div>
+            {calculateProfit()}/{calculateProfitTarget()} ({calculateProgressPercent()}%)
+          </div>
+        ) : (
+          <div>0/0 (0%)</div>
+        )}
       </div>
-      <Progress percent={0} active progress color="teal" size="small" />
-      {(botState === "START" || botState === "STOP") && (
+      { (botState === "START" || botState === "PAUSE")
+        ?
+        <Progress percent={calculateProgressPercent()} active progress color="teal" size="small" />
+        :
+        <Progress percent={0} active progress color="teal" size="small" />
+      }
+      
+      {(botState === "START" || botState === "PAUSE") && (
         <>
           <Divider section />
           <Card fluid>
             <Chart
               type="area"
               options={chart.options}
-              series={ [
+              series={[
                 {
                   name: "series1",
                   data: botTransaction,
@@ -254,7 +327,7 @@ const BotInformation = () => {
                 <Card.Description style={{ marginBottom: 8 }}>
                   รูปแบบการเล่น
                 </Card.Description>
-                <Card.Meta>PLAYER/BANKER</Card.Meta>
+                <Card.Meta>{renderBetSide()}</Card.Meta>
               </Card.Content>
             </Card>
             <Card>
@@ -262,7 +335,7 @@ const BotInformation = () => {
                 <Card.Description style={{ marginBottom: 8 }}>
                   รูปแบบการเติมเงิน
                 </Card.Description>
-                <Card.Meta>Zean System</Card.Meta>
+            <Card.Meta>{renderMoneySystem()}</Card.Meta>
               </Card.Content>
             </Card>
             <Card>
@@ -270,7 +343,7 @@ const BotInformation = () => {
                 <Card.Description style={{ marginBottom: 8 }}>
                   ชิพเริ่มต้น
                 </Card.Description>
-                <Card.Meta>Zean System</Card.Meta>
+                <Card.Meta>{numeral(botSetting.init_bet).format("0,0")}</Card.Meta>
               </Card.Content>
             </Card>
             <Card>
@@ -278,7 +351,7 @@ const BotInformation = () => {
                 <Card.Description style={{ marginBottom: 8 }}>
                   กำไรเป้าหมาย
                 </Card.Description>
-                <Card.Meta>5%</Card.Meta>
+                <Card.Meta>{botSetting.profit_percent}%</Card.Meta>
               </Card.Content>
             </Card>
           </Card.Group>

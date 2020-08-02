@@ -27,17 +27,20 @@ const initialAuthState = {
   loading: false,
 };
 
-
 const balance_set = (payload) => ({
-    type: "BALANCE/SET",
-    payload
-  });
+  type: "BALANCE/SET",
+  payload,
+});
 
-const initialBalanceState = 0
-  
+const initialBalanceState = 0;
+
 const bot_setting_set = (payload) => ({
   type: "BOT_SETTING/SET",
   payload: payload,
+});
+
+const bot_setting_clear = () => ({
+  type: "BOT_SETTING/CLEAR",
 });
 
 const bot_setting_init = (payload) => ({
@@ -59,13 +62,12 @@ const initialBotSettingState = {
 };
 
 const auth = (state = initialAuthState, action) => {
- 
   switch (action.type) {
     case "AUTH/SET_BOT":
       state = {
         ...state,
-        bot_id: action.payload.id
-      }
+        bot_id: action.payload.id,
+      };
       break;
     case "AUTH/LOGIN":
       state = {
@@ -91,11 +93,10 @@ const auth = (state = initialAuthState, action) => {
       state = initialAuthState;
       break;
     default:
-      console.log({...state, action: action.type})
       state = { ...state };
       break;
   }
-  
+
   return state;
 };
 
@@ -104,15 +105,23 @@ const botSetting = (state = initialBotSettingState, action) => {
     case "BOT_SETTING/INIT":
       state = {
         ...action.payload,
-        profit_threshold: action.payload.init_wallet + (action.payload.init_wallet * (state.profit_percent / 100)),
-        loss_threshold: action.payload.init_wallet - (action.payload.init_wallet * (state.loss_percent / 100)) ,
+        profit_threshold:
+          action.payload.init_wallet +
+          action.payload.init_wallet * (state.profit_percent / 100),
+        loss_threshold:
+          action.payload.init_wallet -
+          action.payload.init_wallet * (state.loss_percent / 100),
       };
       break;
     case "BOT_SETTING/SET":
       state = {
         ...action.payload,
-        profit_threshold: state.init_wallet + (state.init_wallet * (state.profit_percent / 100)),
-        loss_threshold: state.init_wallet - (state.init_wallet * (state.loss_percent / 100)) ,
+        profit_threshold:
+          action.payload.init_wallet +
+          action.payload.init_wallet * (state.profit_percent / 100),
+        loss_threshold:
+          action.payload.init_wallet -
+          action.payload.init_wallet * (state.loss_percent / 100),
       };
       break;
     case "BOT_SETTING/CLEAR":
@@ -126,41 +135,41 @@ const botSetting = (state = initialBotSettingState, action) => {
 };
 
 const balance = (state = initialBalanceState, action) => {
-    switch (action.type) {
-      case "BALANCE/SET":
-        state = action.payload;
-        break;
-      default:
-        state = state;
-        break;
-    }
-    return state;
-  };
+  switch (action.type) {
+    case "BALANCE/SET":
+      state = action.payload;
+      break;
+    default:
+      state = state;
+      break;
+  }
+  return state;
+};
 
-  const initialBotTransaction = []
+const initialBotTransaction = [];
 
-  const bot_transaction_set = (payload) => ({
-    type: "BOT_TRANSACTION/SET",
-    payload: payload,
-  });
+const bot_transaction_set = (payload) => ({
+  type: "BOT_TRANSACTION/SET",
+  payload: payload,
+});
 
-  const botTransaction = (state = initialBotTransaction, action) => {
-    switch (action.type) {
-      case "BOT_TRANSACTION/SET":
-        state = action.payload;
-        break;
-      default:
-        state = [];
-        break;
-    }
-    return state;
-  };
+const botTransaction = (state = initialBotTransaction, action) => {
+  switch (action.type) {
+    case "BOT_TRANSACTION/SET":
+      state = action.payload;
+      break;
+    default:
+      state = [];
+      break;
+  }
+  return state;
+};
 
 const rootReducer = combineReducers({
   auth,
   botSetting,
   balance,
-  botTransaction
+  botTransaction,
 });
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
@@ -169,4 +178,14 @@ const store = createStore(rootReducer, composeEnhancers());
 
 export default store;
 
-export { auth_login, auth_loading, bot_setting_set, auth_logout, balance_set, bot_setting_init, bot_transaction_set, auth_setbot };
+export {
+  auth_login,
+  auth_loading,
+  bot_setting_set,
+  auth_logout,
+  balance_set,
+  bot_setting_init,
+  bot_transaction_set,
+  auth_setbot,
+  bot_setting_clear
+};
