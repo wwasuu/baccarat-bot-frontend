@@ -99,36 +99,37 @@ const Setting = () => {
   }, []);
 
   function subscribeBot() {
-    const room = `user${auth.id}`
+    const room = `user${auth.id}`;
     socket.on(room, (data) => {
       console.log(data);
       if (data.action === "bet_success") {
         setBet(data.data);
       } else if (data.action === "bet_result") {
-        dispatch(balance_set(data.wallet))
+        dispatch(balance_set(data.wallet));
         if (data.isStop) {
-          dispatch(bot_setting_clear())
-          history.push("/setting")
+          dispatch(bot_setting_clear());
+          history.push("/setting");
         } else {
           getUserBotTransaction();
           getBotTransaction();
           getUserTransaction();
-        }        
+        }
       }
     });
   }
 
-
   async function getUserBotTransaction() {
     let bot_id = auth.bot_id;
     if (!bot_id) {
-      return
+      return;
     }
     try {
       const {
         data: { data, success },
-      } = await axios.get(`https://api.ibot.bet/user_bot_transaction/${bot_id}`);
-    
+      } = await axios.get(
+        `https://api.ibot.bet/user_bot_transaction/${bot_id}`
+      );
+
       let transaction = [0];
       data.forEach((element) => {
         transaction.push(data.wallet - element.bot.init_wallet);
@@ -141,7 +142,7 @@ const Setting = () => {
 
   async function getUserTransaction() {
     let id = auth.id;
-    if (!id) return
+    if (!id) return;
     try {
       let url = `https://api.ibot.bet/user_transaction/${id}`;
       const {
@@ -191,22 +192,21 @@ const Setting = () => {
   return (
     <>
       <Navbar />
-      <Grid
-        style={{
-          backgroundColor: "#212121",
-          height: "100vh",
-          color: "#fff",
-          overflow: "hidden",
-        }}
-      >
+      <Grid className="main-container-b">
         <Grid.Row columns={2}>
           <Grid.Column
-            style={{ padding: "24px", overflow: "auto", height: "100vh" }}
+            mobile={16}
+            tablet={16}
+            computer={8}
+            className="content-container-c"
           >
             <BotInformation />
           </Grid.Column>
           <Grid.Column
-            style={{ padding: "24px", overflow: "auto", height: "100vh" }}
+            mobile={16}
+            tablet={16}
+            computer={8}
+            className="content-container-c"
           >
             <Container text fluid>
               <Header as="h2" style={{ color: "#fff" }}>
@@ -227,7 +227,7 @@ const Setting = () => {
               <Header as="h2" style={{ color: "#fff" }}>
                 iBotX
               </Header>
-              <Card.Group itemsPerRow={4}>
+              <Card.Group>
                 {Object.keys(bet).length !== 0 ? (
                   <>
                     <Card

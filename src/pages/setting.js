@@ -20,22 +20,21 @@ const Setting = () => {
   return (
     <>
       <Navbar />
-      <Grid
-        style={{
-          backgroundColor: "#212121",
-          height: "100vh",
-          color: "#fff",
-          overflow: "hidden",
-        }}
-      >
+      <Grid className="main-container-b">
         <Grid.Row columns={2}>
           <Grid.Column
-            style={{ padding: "24px", overflow: "auto", height: "100vh" }}
+            mobile={16}
+            tablet={16}
+            computer={8}
+            className="content-container-c"
           >
             <BotInformation />
           </Grid.Column>
           <Grid.Column
-            style={{ padding: "24px", overflow: "auto", height: "100vh" }}
+            mobile={16}
+            tablet={16}
+            computer={8}
+            className="content-container-c"
           >
             <Container text fluid>
               <Header as="h2" style={{ color: "#fff" }}>
@@ -52,17 +51,23 @@ const Setting = () => {
                 <Card
                   className={cn({ active: botSetting.bet_side === 1 })}
                   header="Player/Banker"
-                  onClick={() =>dispatch(bot_setting_set({ ...botSetting, bet_side: 1 }))}
+                  onClick={() =>
+                    dispatch(bot_setting_set({ ...botSetting, bet_side: 1 }))
+                  }
                 />
                 <Card
                   className={cn({ active: botSetting.bet_side === 2 })}
                   header="Player เท่านั้น"
-                  onClick={() =>dispatch(bot_setting_set({ ...botSetting, bet_side: 2 }))}
+                  onClick={() =>
+                    dispatch(bot_setting_set({ ...botSetting, bet_side: 2 }))
+                  }
                 />
                 <Card
                   className={cn({ active: botSetting.bet_side === 3 })}
                   header="Banker เท่านั้น"
-                  onClick={() =>dispatch(bot_setting_set({ ...botSetting, bet_side: 3 }))}
+                  onClick={() =>
+                    dispatch(bot_setting_set({ ...botSetting, bet_side: 3 }))
+                  }
                 />
               </Card.Group>
             </Container>
@@ -79,26 +84,42 @@ const Setting = () => {
                   className={cn({ active: botSetting.money_system === 1 })}
                   header="เติมเงินคงที่"
                   description="คือการกำหนดให้บอทเดินเงินเท่าๆกันทุกๆตา ตามที่เรากำหนดไว้ (ไม่จำกัดทุน)"
-                  onClick={() =>dispatch(bot_setting_set({ ...botSetting, money_system: 1 }))}
+                  onClick={() =>
+                    dispatch(
+                      bot_setting_set({ ...botSetting, money_system: 1 })
+                    )
+                  }
                 />
                 <Card
                   className={cn({ active: botSetting.money_system === 2 })}
                   header="การเดินเงินแบบทบ 5 ไม้ มาติงเกลพิเศษ"
                   description="เหมาะสำหรับการลงทุนระยะสั้น
                 จะเดินเงิน  50-100-250-600-1500 (ทุน2500)"
-                onClick={() =>dispatch(bot_setting_set({ ...botSetting, money_system: 2 }))}
+                  onClick={() =>
+                    dispatch(
+                      bot_setting_set({ ...botSetting, money_system: 2 })
+                    )
+                  }
                 />
                 <Card
                   className={cn({ active: botSetting.money_system === 3 })}
                   header="การเดินเงินแบบลาบูแชร์"
                   description="คือการแบ่งกองเงินออกเป็นกองๆ กองละเท่าๆกัน (ทุน1000เปิดใช้งาน)"
-                  onClick={() =>dispatch(bot_setting_set({ ...botSetting, money_system: 3 }))}
+                  onClick={() =>
+                    dispatch(
+                      bot_setting_set({ ...botSetting, money_system: 3 })
+                    )
+                  }
                 />
                 <Card
                   className={cn({ active: botSetting.money_system === 4 })}
                   header="การเดินเงินแบบ X sytem"
                   description="จะบริหารเงินให้อย่างเหมาะสม (ทุน5000เปิดใช้งาน)"
-                  onClick={() =>dispatch(bot_setting_set({ ...botSetting, money_system: 4 }))}
+                  onClick={() =>
+                    dispatch(
+                      bot_setting_set({ ...botSetting, money_system: 4 })
+                    )
+                  }
                 />
               </Card.Group>
             </Container>
@@ -221,7 +242,7 @@ const Setting = () => {
               </p>
               <Form.Select
                 value={botSetting.profit_percent}
-                onChange={(e,v) =>
+                onChange={(e, v) =>
                   dispatch(
                     bot_setting_set({ ...botSetting, profit_percent: v.value })
                   )
@@ -247,13 +268,14 @@ const Setting = () => {
                 กำหนดขาดทุนไม่เกิน
               </Header>
               <p>ข้อแนะนำ</p>
-          
+
               <Form.Select
                 value={botSetting.loss_percent}
                 onChange={(e, v) => {
-                  return dispatch(bot_setting_set({ ...botSetting, loss_percent: v.value }))
-                  }
-                }
+                  return dispatch(
+                    bot_setting_set({ ...botSetting, loss_percent: v.value })
+                  );
+                }}
                 options={[
                   { key: "1", value: 1, text: "1%" },
                   { key: "2", value: 2, text: "2%" },

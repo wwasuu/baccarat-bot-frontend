@@ -12,18 +12,16 @@ import {
   Header,
   Icon,
   Segment,
-  Statistic
+  Statistic,
 } from "semantic-ui-react";
 import { auth_loading, auth_login } from "../../store";
 
 const Login = () => {
   const history = useHistory();
   const dispatch = useDispatch();
-  const auth = useSelector(state => state.auth)
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
-
-  
+  const auth = useSelector((state) => state.auth);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
   async function login() {
     try {
@@ -37,11 +35,14 @@ const Login = () => {
       if (success) {
         Cookies.set(
           "auth",
-          JSON.stringify({
-            bot_id: data.bot,
-            id: data.user_id,
-            username: data.username,
-          }, { expires: 30 }),
+          JSON.stringify(
+            {
+              bot_id: data.bot,
+              id: data.user_id,
+              username: data.username,
+            },
+            { expires: 30 }
+          )
         );
         dispatch(
           auth_login({
@@ -60,21 +61,15 @@ const Login = () => {
   return (
     <Grid
       textAlign="center"
-      style={{
-        height: "100vh",
-        backgroundColor: "#212121",
-        overflow: "hidden",
-      }}
+      className="main-container"
     >
-      <Grid.Row columns={2}>
+      <Grid.Row>
         <Grid.Column
+          mobile={16}
+          tablet={16}
+          computer={8}
           verticalAlign="middle"
-          style={{
-            padding: "24px 64px",
-            overflowY: "auto",
-            overflowX: "hidden",
-            height: "100vh",
-          }}
+          className="content-container-a"
         >
           <Container text textAlign="left" fluid>
             <Header as="h1" style={{ color: "#fff" }}>
@@ -153,7 +148,13 @@ const Login = () => {
             </p>
           </Container>
         </Grid.Column>
-        <Grid.Column verticalAlign="middle" style={{ padding: "24px 64px" }}>
+        <Grid.Column
+          mobile={16}
+          tablet={16}
+          computer={8}
+          verticalAlign="middle"
+          className="content-container-b"
+        >
           <Header as="h2" style={{ color: "#fff" }} textAlign="left">
             Log-in to your account
           </Header>
@@ -164,7 +165,7 @@ const Login = () => {
                 icon="user"
                 iconPosition="left"
                 placeholder="Username"
-                onChange={e => setUsername(e.target.value)}
+                onChange={(e) => setUsername(e.target.value)}
               />
               <Form.Input
                 fluid
@@ -172,10 +173,16 @@ const Login = () => {
                 iconPosition="left"
                 placeholder="Password"
                 type="password"
-                onChange={e => setPassword(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
               />
 
-              <Button color="teal" fluid size="large" onClick={login} loading={auth.loading}>
+              <Button
+                color="teal"
+                fluid
+                size="large"
+                onClick={login}
+                loading={auth.loading}
+              >
                 Login
               </Button>
             </Segment>
@@ -183,7 +190,7 @@ const Login = () => {
               Don't Have an Account? <a href="#">Sign Up</a>
             </Form.Field>
           </Form>
-          <Statistic.Group widths="three" size="tiny" style={{ marginTop: 48 }}>
+          <Statistic.Group className="statistic-container" widths="three" size="tiny">
             <Statistic>
               <Statistic.Label>
                 <Icon name="user" color="teal" />

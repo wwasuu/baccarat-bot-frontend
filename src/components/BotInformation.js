@@ -281,11 +281,7 @@ const BotInformation = () => {
         }
       </div>
       <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          marginBottom: 8,
-        }}
+        className="progress-info"
       >
         {botState === "START" || botState === "PAUSE" ? (
           <div>

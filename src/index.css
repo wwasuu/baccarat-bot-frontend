@@ -49,9 +49,9 @@ code {
   margin-bottom: 36px;
 }
 
-/* .ui.header+p {
-  font-size: .95rem;
-} */
+.ui.header+p {
+  color: #fff;
+}
 
 .ui.button, .ui.selection.dropdown, .ui.dropdown .menu {
   background: hsl(0, 0%, 18%);
@@ -110,4 +110,68 @@ code {
 .ui.cards a.card:hover, .ui.link.card:hover, .ui.link.cards .card:hover, a.ui.card:hover {
   background-color: #cacbcd;
   transform: none;
+}
+
+.main-container {
+  height: 100vh;
+  background-color: #212121;
+  overflow: hidden;
+}
+
+.main-container-b {
+  height: 100vh;
+  background-color: #212121;
+  overflow: hidden;
+}
+
+.content-container-a {
+  padding: 24px 64px !important;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100vh;
+}
+
+.content-container-b {
+  padding: 24px 64px !important;
+}
+
+.content-container-c {
+  padding: 24px !important;
+  overflow: auto; 
+  height: 100vh;
+}
+
+.statistic-container {
+  margin-top: 48px;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+    color: #fff;
+}
+
+p {
+  color: #fff;
+}
+
+@media only screen and (max-width: 767px) and (min-width: 320px) {
+  .main-container {
+    height: 100vh;
+  }
+  .main-container-b {
+    background-color: #212121;
+    overflow: auto;
+  }
+  .statistic-container {
+    display: none !important;
+  }
+  .content-container-a {
+    display: none !important;
+  }
+  .content-container-a, .content-container-b, .content-container-c {
+    padding: 24px !important;
+    height: auto;
+  }
 }
