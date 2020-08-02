@@ -25,6 +25,7 @@ import {
   bot_setting_init,
   auth_setbot,
   bot_setting_clear,
+  bot_transaction_set
 } from "../store";
 
 const BotInformation = () => {
@@ -33,7 +34,7 @@ const BotInformation = () => {
   const auth = useSelector((state) => state.auth);
   const balance = useSelector((state) => state.balance);
   const botSetting = useSelector((state) => state.botSetting);
-  const botTransaction = useSelector((state) => state.botTransaction);
+  var botTransaction = useSelector((state) => state.botTransaction);
   const dispatch = useDispatch();
   const [botState, setBotState] = useState("SETTING");
 
@@ -50,7 +51,36 @@ const BotInformation = () => {
 
   useEffect(() => {
     initBotState();
+    getUserBotTransaction()
   }, []);
+
+  async function getUserBotTransaction() {
+    let bot_id = auth.bot_id;
+    if (!bot_id) {
+      return
+    }
+    try {
+      const {
+        data: { data, success },
+      } = await axios.get(`https://api.ibot.bet/user_bot_transaction/${bot_id}`);
+      let transaction = [0];
+      data.forEach((element) => {
+        transaction.push(element.wallet - element.bot.init_wallet);
+      });
+    
+      dispatch(
+        bot_transaction_set([
+          {
+            name: "series1",
+            data: [...transaction],
+          },
+        ])
+      );
+      
+    } catch (error) {
+      console.log("error while call getUserBotTransaction()", error);
+    }
+  }
 
   useEffect(() => {
     getWallet();
@@ -95,12 +125,11 @@ const BotInformation = () => {
       } = await axios.get(`https://api.ibot.bet/wallet/${id}`);
       if (success) {
         dispatch(balance_set(data.myWallet.MAIN_WALLET.chips.credit));
-        dispatch(
-          bot_setting_init({
-            ...botSetting,
-            init_wallet: data.myWallet.MAIN_WALLET.chips.credit,
-          })
-        );
+        // dispatch(
+        //   bot_setting_init({
+        //     ...botSetting,
+        //   })
+        // );
       }
     } catch (error) {
       console.log("error while call getWallet()", error);
@@ -148,7 +177,9 @@ const BotInformation = () => {
         username: auth.username,
       });
       dispatch(bot_setting_clear());
-      history.push("/setting");
+      setTimeout(() => {
+        history.push("/setting");
+      }, 1000)
     } catch (error) {
       console.log("Error while call stop()", error);
     }
@@ -159,11 +190,11 @@ const BotInformation = () => {
   }
 
   function calculateProfitTarget() {
-    return numeral(botSetting.profit_threshold - balance).format("0,0");
+    return numeral(botSetting.profit_threshold - botSetting.init_wallet).format("0,0");
   }
 
   function calculateProgressPercent() {
-    const target = botSetting.profit_threshold - balance
+    const target = botSetting.profit_threshold - botSetting.init_wallet
     const current = balance - botSetting.init_wallet
     return Math.round((100 * current) / target)
   }
@@ -305,12 +336,7 @@ const BotInformation = () => {
             <Chart
               type="area"
               options={chart.options}
-              series={[
-                {
-                  name: "series1",
-                  data: botTransaction,
-                },
-              ]}
+              series={botTransaction}
               height="240"
             />
           </Card>
@@ -347,6 +373,14 @@ const BotInformation = () => {
                   กำไรเป้าหมาย
                 </Card.Description>
                 <Card.Meta>{botSetting.profit_percent}%</Card.Meta>
+              </Card.Content>
+            </Card>
+            <Card>
+              <Card.Content>
+                <Card.Description style={{ marginBottom: 8 }}>
+                  Stop Loss
+                </Card.Description>
+                <Card.Meta>{botSetting.loss_percent}%</Card.Meta>
               </Card.Content>
             </Card>
           </Card.Group>

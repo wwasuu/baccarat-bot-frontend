@@ -159,7 +159,7 @@ const botTransaction = (state = initialBotTransaction, action) => {
       state = action.payload;
       break;
     default:
-      state = [];
+      state = state;
       break;
   }
   return state;

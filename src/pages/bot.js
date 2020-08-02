@@ -22,6 +22,7 @@ function compare(a, b) {
 
 const Setting = () => {
   const auth = useSelector((state) => state.auth);
+  var botTransaction = useSelector((state) => state.botTransaction);
   const dispatch = useDispatch();
   const history = useHistory();
   var [tableData, setTableData] = useState([]);
@@ -94,7 +95,7 @@ const Setting = () => {
   useEffect(() => {
     getBotTransaction();
     getUserTransaction();
-    getUserBotTransaction();
+    // getUserBotTransaction();
     subscribeBot();
   }, []);
 
@@ -103,19 +104,36 @@ const Setting = () => {
     socket.on(room, (data) => {
       console.log(data);
       if (data.action === "bet_success") {
-        setBet(data.data);
+        setBet({...data.data, win_percent: data.win_percent});
       } else if (data.action === "bet_result") {
         dispatch(balance_set(data.wallet));
         if (data.isStop) {
           dispatch(bot_setting_clear());
-          history.push("/setting");
+          setTimeout(() => {
+            history.push("/setting");
+          }, 1000)
         } else {
+          setBet({})
           getUserBotTransaction();
           getBotTransaction();
           getUserTransaction();
         }
       }
     });
+  }
+
+  async function getUserTransaction() {
+    let id = auth.id;
+    if (!id) return
+    try {
+      let url = `https://api.ibot.bet/user_transaction/${id}`;
+      const {
+        data: { data, success },
+      } = await axios.get(url);
+      setTableData(data.bets.data);
+    } catch (error) {
+      console.log("error while call getBotTransaction()", error);
+    }
   }
 
   async function getUserBotTransaction() {
@@ -126,31 +144,24 @@ const Setting = () => {
     try {
       const {
         data: { data, success },
-      } = await axios.get(
-        `https://api.ibot.bet/user_bot_transaction/${bot_id}`
-      );
-
+      } = await axios.get(`https://api.ibot.bet/user_bot_transaction/${bot_id}`);
+      console.log(data)
       let transaction = [0];
       data.forEach((element) => {
-        transaction.push(data.wallet - element.bot.init_wallet);
+        transaction.push(element.wallet - element.bot.init_wallet);
       });
-      bot_transaction_set(transaction);
+    
+      dispatch(
+        bot_transaction_set([
+          {
+            name: "series1",
+            data: [...transaction],
+          },
+        ])
+      );
+      
     } catch (error) {
       console.log("error while call getUserBotTransaction()", error);
-    }
-  }
-
-  async function getUserTransaction() {
-    let id = auth.id;
-    if (!id) return;
-    try {
-      let url = `https://api.ibot.bet/user_transaction/${id}`;
-      const {
-        data: { data, success },
-      } = await axios.get(url);
-      setTableData(data.bets.data);
-    } catch (error) {
-      console.log("error while call getBotTransaction()", error);
     }
   }
 
@@ -166,22 +177,9 @@ const Setting = () => {
           data: [],
         },
       ];
-      let i = start;
-      let t = 0;
       newData.forEach((element) => {
-        if (element.win_result === "WIN") {
-          i++;
-          graph[0].data.push(i);
-        } else if (element.win_result === "LOSE") {
-          i--;
-          graph[0].data.push(i);
-        } else {
-          graph[0].data.push(i);
-        }
-        if (t === 1) {
-          setStart(i);
-        }
-        t++;
+        graph[0].data.push(element.point);
+        
       });
       setGraph(graph);
     } catch (error) {
@@ -231,23 +229,29 @@ const Setting = () => {
                 {Object.keys(bet).length !== 0 ? (
                   <>
                     <Card
-                      header={bet.current.bot}
-                      description={bet.current.shoe + "-" + bet.current.round}
+                      header={bet.table.title}
+                      description={'เกม ' + bet.current.shoe + "-" + bet.current.round}
                     />
-                    <Card header="56.45%" description="โอกาสทำกำไร" />
+                    <Card header={bet.win_percent.toFixed(2) + '%'} description="โอกาสทำกำไร" />
+                    <Card header={bet.current.bot} description={bet.betVal+ ' บาท'} />
                   </>
                 ) : (
                   <>
                     <Card
-                      header={"กำลังวิเคราะห์"}
+                      header={"วิเคราะห์"}
                       description={"โต๊ะน่าเล่น"}
                     />
-                    <Card header="กำลังวิเคราะห์" description="โอกาสทำกำไร" />
+                    <Card header="วิเคราะห์" description="การแทง" />
+                    <Card header="วิเคราะห์" description="โอกาสทำกำไร" />
+                   
                   </>
                 )}
               </Card.Group>
             </Container>
             <Container>
+            <Header as="h2" style={{ color: "#fff" }}>
+                ประวัติการเล่น
+              </Header>
               <Table celled inverted selectable>
                 <Table.Header>
                   <Table.Row>
