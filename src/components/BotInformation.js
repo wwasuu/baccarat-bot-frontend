@@ -25,6 +25,7 @@ import {
   bot_setting_init,
   auth_setbot,
   bot_setting_clear,
+  bot_transaction_set
 } from "../store";
 
 const BotInformation = () => {
@@ -33,7 +34,7 @@ const BotInformation = () => {
   const auth = useSelector((state) => state.auth);
   const balance = useSelector((state) => state.balance);
   const botSetting = useSelector((state) => state.botSetting);
-  const botTransaction = useSelector((state) => state.botTransaction);
+  var botTransaction = useSelector((state) => state.botTransaction);
   const dispatch = useDispatch();
   const [botState, setBotState] = useState("SETTING");
 
@@ -50,7 +51,39 @@ const BotInformation = () => {
 
   useEffect(() => {
     initBotState();
+    getUserBotTransaction()
   }, []);
+
+  async function getUserBotTransaction() {
+    let bot_id = auth.bot_id;
+    console.log(bot_id)
+    if (!bot_id) {
+      return
+    }
+    try {
+      const {
+        data: { data, success },
+      } = await axios.get(`https://api.ibot.bet/user_bot_transaction/${bot_id}`);
+      console.log(data)
+      let transaction = [0];
+      data.forEach((element) => {
+        transaction.push(element.wallet - element.bot.init_wallet);
+      });
+      console.log(transaction)
+
+      dispatch(
+        bot_transaction_set([
+          {
+            name: "series1",
+            data: [...transaction],
+          },
+        ])
+      );
+      
+    } catch (error) {
+      console.log("error while call getUserBotTransaction()", error);
+    }
+  }
 
   useEffect(() => {
     getWallet();
@@ -309,12 +342,7 @@ const BotInformation = () => {
             <Chart
               type="area"
               options={chart.options}
-              series={[
-                {
-                  name: "series1",
-                  data: botTransaction,
-                },
-              ]}
+              series={botTransaction}
               height="240"
             />
           </Card>

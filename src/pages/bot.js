@@ -22,6 +22,7 @@ function compare(a, b) {
 
 const Setting = () => {
   const auth = useSelector((state) => state.auth);
+  var botTransaction = useSelector((state) => state.botTransaction);
   const dispatch = useDispatch();
   const history = useHistory();
   var [tableData, setTableData] = useState([]);
@@ -92,9 +93,10 @@ const Setting = () => {
   const [bet, setBet] = useState({});
 
   useEffect(() => {
+    console.log(botTransaction)
     getBotTransaction();
     getUserTransaction();
-    getUserBotTransaction();
+    // getUserBotTransaction();
     subscribeBot();
   }, []);
 
@@ -110,33 +112,17 @@ const Setting = () => {
           dispatch(bot_setting_clear())
           history.push("/setting")
         } else {
-          getUserBotTransaction();
-          getBotTransaction();
+          // getUserBotTransaction();
+          // getBotTransaction();
+          setBotTrans()
           getUserTransaction();
         }        
       }
     });
   }
 
-
-  async function getUserBotTransaction() {
-    let bot_id = auth.bot_id;
-    if (!bot_id) {
-      return
-    }
-    try {
-      const {
-        data: { data, success },
-      } = await axios.get(`https://api.ibot.bet/user_bot_transaction/${bot_id}`);
-    
-      let transaction = [0];
-      data.forEach((element) => {
-        transaction.push(data.wallet - element.bot.init_wallet);
-      });
-      bot_transaction_set(transaction);
-    } catch (error) {
-      console.log("error while call getUserBotTransaction()", error);
-    }
+  async function setBotTrans(){
+    console.log(botTransaction)
   }
 
   async function getUserTransaction() {
