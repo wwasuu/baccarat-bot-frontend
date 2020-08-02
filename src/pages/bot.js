@@ -113,7 +113,7 @@ const Setting = () => {
           history.push("/setting")
         } else {
           setBet({})
-          // getUserBotTransaction();
+          getUserBotTransaction();
           getBotTransaction();
           setBotTrans()
           getUserTransaction();
@@ -137,6 +137,37 @@ const Setting = () => {
       setTableData(data.bets.data);
     } catch (error) {
       console.log("error while call getBotTransaction()", error);
+    }
+  }
+
+  async function getUserBotTransaction() {
+    let bot_id = auth.bot_id;
+    console.log(bot_id)
+    if (!bot_id) {
+      return
+    }
+    try {
+      const {
+        data: { data, success },
+      } = await axios.get(`https://api.ibot.bet/user_bot_transaction/${bot_id}`);
+      console.log(data)
+      let transaction = [0];
+      data.forEach((element) => {
+        transaction.push(element.wallet - element.bot.init_wallet);
+      });
+      console.log(transaction)
+
+      dispatch(
+        bot_transaction_set([
+          {
+            name: "series1",
+            data: [...transaction],
+          },
+        ])
+      );
+      
+    } catch (error) {
+      console.log("error while call getUserBotTransaction()", error);
     }
   }
 
@@ -205,23 +236,29 @@ const Setting = () => {
                 {Object.keys(bet).length !== 0 ? (
                   <>
                     <Card
-                      header={bet.current.bot}
-                      description={bet.current.shoe + "-" + bet.current.round}
+                      header={bet.table.title}
+                      description={'เกม ' + bet.current.shoe + "-" + bet.current.round}
                     />
                     <Card header={bet.win_percent.toFixed(2) + '%'} description="โอกาสทำกำไร" />
+                    <Card header={bet.current.bot} description={bet.betVal+ ' บาท'} />
                   </>
                 ) : (
                   <>
                     <Card
-                      header={"กำลังวิเคราะห์"}
+                      header={"วิเคราะห์"}
                       description={"โต๊ะน่าเล่น"}
                     />
-                    <Card header="กำลังวิเคราะห์" description="โอกาสทำกำไร" />
+                    <Card header="วิเคราะห์" description="การแทง" />
+                    <Card header="วิเคราะห์" description="โอกาสทำกำไร" />
+                   
                   </>
                 )}
               </Card.Group>
             </Container>
             <Container>
+            <Header as="h2" style={{ color: "#fff" }}>
+                ประวัติการเล่น
+              </Header>
               <Table celled inverted selectable>
                 <Table.Header>
                   <Table.Row>

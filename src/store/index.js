@@ -101,6 +101,7 @@ const auth = (state = initialAuthState, action) => {
 };
 
 const botSetting = (state = initialBotSettingState, action) => {
+  console.log(action)
   switch (action.type) {
     case "BOT_SETTING/INIT":
       state = {

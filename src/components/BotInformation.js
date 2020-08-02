@@ -128,12 +128,11 @@ const BotInformation = () => {
       } = await axios.get(`https://api.ibot.bet/wallet/${id}`);
       if (success) {
         dispatch(balance_set(data.myWallet.MAIN_WALLET.chips.credit));
-        dispatch(
-          bot_setting_init({
-            ...botSetting,
-            init_wallet: data.myWallet.MAIN_WALLET.chips.credit,
-          })
-        );
+        // dispatch(
+        //   bot_setting_init({
+        //     ...botSetting,
+        //   })
+        // );
       }
     } catch (error) {
       console.log("error while call getWallet()", error);
@@ -141,6 +140,7 @@ const BotInformation = () => {
   }
 
   async function start() {
+    console.log('start')
     try {
       const {
         data: { data, success },
@@ -192,11 +192,11 @@ const BotInformation = () => {
   }
 
   function calculateProfitTarget() {
-    return numeral(botSetting.profit_threshold - balance).format("0,0");
+    return numeral(botSetting.profit_threshold - botSetting.init_wallet).format("0,0");
   }
 
   function calculateProgressPercent() {
-    const target = botSetting.profit_threshold - balance
+    const target = botSetting.profit_threshold - botSetting.init_wallet
     const current = balance - botSetting.init_wallet
     return Math.round((100 * current) / target)
   }
@@ -379,6 +379,14 @@ const BotInformation = () => {
                   กำไรเป้าหมาย
                 </Card.Description>
                 <Card.Meta>{botSetting.profit_percent}%</Card.Meta>
+              </Card.Content>
+            </Card>
+            <Card>
+              <Card.Content>
+                <Card.Description style={{ marginBottom: 8 }}>
+                  Stop Loss
+                </Card.Description>
+                <Card.Meta>{botSetting.loss_percent}%</Card.Meta>
               </Card.Content>
             </Card>
           </Card.Group>
