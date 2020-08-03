@@ -177,8 +177,9 @@ const Setting = () => {
           data: [],
         },
       ];
+      let offset = 0 - newData[0].point
       newData.forEach((element) => {
-        graph[0].data.push(element.point);
+        graph[0].data.push(element.point + offset);
         
       });
       setGraph(graph);
