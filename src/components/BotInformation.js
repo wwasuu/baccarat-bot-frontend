@@ -8,6 +8,9 @@ import {
   Progress,
   Divider,
   Card,
+  Modal,
+  Checkbox,
+  Form,
 } from "semantic-ui-react";
 import { useHistory, useLocation } from "react-router-dom";
 import Chart from "react-apexcharts";
@@ -15,17 +18,12 @@ import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import numeral from "numeral";
 import {
-  initiateSocket,
-  disconnectSocket,
-  subscribeToChat,
-} from "../utils/socket-io";
-import {
   balance_set,
   bot_setting_set,
   bot_setting_init,
   auth_setbot,
   bot_setting_clear,
-  bot_transaction_set
+  bot_transaction_set,
 } from "../store";
 
 import BotGraph from './BotGraph'
@@ -49,40 +47,36 @@ const BotInformation = () => {
   var botTransaction = useSelector((state) => state.botTransaction);
   const dispatch = useDispatch();
   const [botState, setBotState] = useState("SETTING");
-
-  // useEffect(() => {
-  //   initiateSocket("user2");
-  //   subscribeToChat((err, data) => {
-  //     if (err) return;
-  //       console.log(data)
-  //   });
-  //   return () => {
-  //     disconnectSocket();
-  //   };
-  // }, []);
+  const [isShownConfirmPause, setIsShownConfirmPause] = useState(false);
+  const [isShownConfirmStop, setIsShownConfirmStop] = useState(false);
+  const [betSide, setBetSide] = useState(["PLAYER/BANKER", "PLAYER", "BANKER"])
 
   useEffect(() => {
     initBotState();
-    getUserBotTransaction()
+    getUserBotTransaction();
   }, []);
+
+  useEffect(() => {
+    getUserBot();
+  }, [auth.isLoggedIn]);
 
   async function getUserBotTransaction() {
     let bot_id = auth.bot_id;
     if (!bot_id) {
-      return
+      return;
     }
     try {
       const {
         data: { data, success },
-      } = await axios.get(`https://api.ibot.bet/user_bot_transaction/${bot_id}`);
+      } = await axios.get(
+        `https://api.ibot.bet/user_bot_transaction/${bot_id}`
+      );
       let transaction = [0];
       let newData = data.sort(compare);
       newData.forEach((element) => {
         transaction.push(element.wallet - element.bot.init_wallet);
       });
 
-      console.log(transaction)
-    
       dispatch(
         bot_transaction_set([
           {
@@ -91,16 +85,10 @@ const BotInformation = () => {
           },
         ])
       );
-      
     } catch (error) {
       console.log("error while call getUserBotTransaction()", error);
     }
   }
-
-  useEffect(() => {
-    getWallet();
-    getUserBot();
-  }, [auth.isLoggedIn]);
 
   function initBotState() {
     if (location.pathname === "/bot") {
@@ -116,6 +104,7 @@ const BotInformation = () => {
         data: { data, success },
       } = await axios.get(`https://api.ibot.bet/user_bot/${id}`);
       if (success && data.bot != null) {
+        dispatch(balance_set(data.bot.init_wallet));
         dispatch(
           bot_setting_init({
             ...data.bot,
@@ -125,6 +114,8 @@ const BotInformation = () => {
         dispatch(auth_setbot({ ...data.bot }));
         setBotState("START");
         history.push("/bot");
+      } else {
+        getWallet();
       }
     } catch (error) {
       console.log("error while call get user bot()", error);
@@ -143,7 +134,7 @@ const BotInformation = () => {
         dispatch(
           bot_setting_init({
             ...botSetting,
-            init_wallet: data.myWallet.MAIN_WALLET.chips.credit
+            init_wallet: data.myWallet.MAIN_WALLET.chips.credit,
           })
         );
       }
@@ -154,22 +145,32 @@ const BotInformation = () => {
 
   async function start() {
     try {
-      const {
-        data: { data, success },
-      } = await axios.post("https://api.ibot.bet/bot", {
-        ...botSetting,
-        username: auth.username,
-      });
-      if (success) {
-        dispatch(
-          bot_setting_init({
-            ...data,
-          })
-        );
-
-        dispatch(auth_setbot({ ...data }));
+      const bot_id = botSetting.id;
+      if (bot_id) {
+        const {
+          data: { data, success },
+        } = await axios.post("https://api.ibot.bet/start", {
+          username: auth.username,
+        });
         setBotState("START");
-        history.push("/bot");
+      } else {
+        const {
+          data: { data, success },
+        } = await axios.post("https://api.ibot.bet/bot", {
+          ...botSetting,
+          username: auth.username,
+        });
+        if (success) {
+          dispatch(
+            bot_setting_init({
+              ...data,
+            })
+          );
+
+          dispatch(auth_setbot({ ...data }));
+          setBotState("START");
+          history.push("/bot");
+        }
       }
     } catch (error) {
       console.log("Error while call start()", error);
@@ -193,26 +194,40 @@ const BotInformation = () => {
         username: auth.username,
       });
       dispatch(bot_setting_clear());
-      setTimeout(() => {
-        history.push("/setting");
-      }, 1000)
+      setIsShownConfirmStop(false);
+      history.push("/setting");
     } catch (error) {
       console.log("Error while call stop()", error);
     }
   }
 
   function calculateProfit() {
+    if (balance <= botSetting.init_wallet) return 0;
     return numeral(balance - botSetting.init_wallet).format("0,0");
   }
 
   function calculateProfitTarget() {
-    return numeral(botSetting.profit_threshold - botSetting.init_wallet).format("0,0");
+    return numeral(botSetting.profit_threshold - botSetting.init_wallet).format(
+      "0,0"
+    );
+  }
+
+  function calculateLoss() {
+    if (balance > botSetting.init_wallet) return 0;
+    return numeral(Math.abs(balance - botSetting.init_wallet)).format("0,0");
+  }
+
+  function calculateLossTarget() {
+    return numeral(botSetting.init_wallet - botSetting.loss_threshold).format(
+      "0,0"
+    );
   }
 
   function calculateProgressPercent() {
-    const target = botSetting.profit_threshold - botSetting.init_wallet
-    const current = balance - botSetting.init_wallet
-    return Math.round((100 * current) / target)
+    if (balance < botSetting.init_wallet) return 0;
+    const target = botSetting.profit_threshold - botSetting.init_wallet;
+    const current = balance - botSetting.init_wallet;
+    return Math.round((100 * current) / target);
   }
 
   function renderBetSide() {
@@ -227,7 +242,7 @@ const BotInformation = () => {
         return "";
     }
   }
-  
+
   function renderMoneySystem() {
     switch (botSetting.money_system) {
       case 1:
@@ -240,6 +255,14 @@ const BotInformation = () => {
         return "การเดินเงินแบบ X sytem";
       default:
         return "";
+    }
+  }
+
+  function toggleBetSide(value) {
+    if (betSide.indexOf(value) >= 0) {
+      setBetSide(betSide.filter(x => x !== value))
+    } else {
+      setBetSide([...betSide, value])
     }
   }
 
@@ -301,110 +324,152 @@ const BotInformation = () => {
   };
 
   return (
-    <Container text fluid>
-      <p style={{ marginBottom: 0 }}>เครดิต</p>
-      <Header size="huge" style={{ color: "#fff", marginTop: 0 }}>
-        <CountUp end={balance} separator="," decimals={2} />
-      </Header>
-      <div style={{ marginBottom: 24 }}>
-        {(botState === "SETTING" || botState === "PAUSE") && (
-          <Button color="teal" icon labelPosition="left" onClick={start}>
-            เริ่ม
-            <Icon name="play" />
-          </Button>
-        )}
-        {(botState === "START") && (
-          
+    <>
+      <Container text fluid>
+        <p style={{ marginBottom: 0 }}>เครดิต</p>
+        <Header size="huge" style={{ color: "#fff", marginTop: 0 }}>
+          <CountUp end={balance} separator="," decimals={2} />
+        </Header>
+        <div style={{ marginBottom: 24 }}>
+          {(botState === "SETTING" || botState === "PAUSE") && (
+            <Button color="teal" icon labelPosition="left" onClick={start}>
+              เริ่ม
+              <Icon name="play" />
+            </Button>
+          )}
+          {botState === "START" && (
             <Button color="yellow" icon labelPosition="left" onClick={pause}>
               <Icon name="pause" />
               หยุด
             </Button>
-        )}
-        { (botState === "START" || botState === "PAUSE")
-          && <Button color="red" icon labelPosition="left" onClick={stop}>
-          <Icon name="close" />
-          ปิด
-        </Button>
-        }
-      </div>
-      <div
-        className="progress-info"
-      >
+          )}
+          {(botState === "START" || botState === "PAUSE") && (
+            <Button color="red" icon labelPosition="left" onClick={stop}>
+              <Icon name="close" />
+              ปิด
+            </Button>
+          )}
+        </div>
+        <div className="progress-info">
+          {botState === "START" || botState === "PAUSE" ? (
+            <div>
+              {calculateProfit()}/{calculateProfitTarget()} (
+              {calculateProgressPercent()}%)
+            </div>
+          ) : (
+            <div>0/0 (0%)</div>
+          )}
+        </div>
         {botState === "START" || botState === "PAUSE" ? (
-          <div>
-            {calculateProfit()}/{calculateProfitTarget()} ({calculateProgressPercent()}%)
-          </div>
+          <Progress
+            percent={calculateProgressPercent()}
+            active
+            progress
+            color="teal"
+            size="small"
+          />
         ) : (
-          <div>0/0 (0%)</div>
+          <Progress percent={0} active progress color="teal" size="small" />
         )}
-      </div>
-      { (botState === "START" || botState === "PAUSE")
-        ?
-        <Progress percent={calculateProgressPercent()} active progress color="teal" size="small" />
-        :
-        <Progress percent={0} active progress color="teal" size="small" />
-      }
-      {(botState === "SETTING") && (
-        <BotGraph></BotGraph>
-      )}
-      {(botState === "START" || botState === "PAUSE") && (
-        <>
-          <Divider section />
-          <Card fluid>
-            <Chart
-              type="area"
-              options={chart.options}
-              series={botTransaction}
-              height="240"
-            />
-          </Card>
-          <Divider section />
-          <p>การตั้งค่า</p>
-          <Card.Group>
-            <Card>
-              <Card.Content>
-                <Card.Description style={{ marginBottom: 8 }}>
-                  รูปแบบการเล่น
-                </Card.Description>
-                <Card.Meta>{renderBetSide()}</Card.Meta>
-              </Card.Content>
+        {(botState === "START" || botState === "PAUSE") && (
+          <>
+            <Divider section />
+            <div className="switch-group">
+                <div class="ui toggle checkbox" onClick={() => toggleBetSide("PLAYER/BANKER")}>
+                  <input type="checkbox" checked={betSide.indexOf("PLAYER/BANKER") > -1} />
+                  <label>Player/Banker</label>
+                </div>
+                <div class="ui toggle checkbox" onClick={() => toggleBetSide("PLAYER")}>
+                  <input type="checkbox" checked={betSide.indexOf("PLAYER") > -1} />
+                  <label>Player</label>
+                </div>
+                <div class="ui toggle checkbox" onClick={() => toggleBetSide("BANKER")}>
+                  <input type="checkbox" checked={betSide.indexOf("BANKER") > -1} />
+                  <label>Banker</label>
+                </div>
+              </div>
+            <Card fluid>
+              <Chart
+                type="area"
+                options={chart.options}
+                series={botTransaction}
+                height="240"
+              />
             </Card>
-            <Card>
-              <Card.Content>
-                <Card.Description style={{ marginBottom: 8 }}>
-                  รูปแบบการเติมเงิน
-                </Card.Description>
-            <Card.Meta>{renderMoneySystem()}</Card.Meta>
-              </Card.Content>
-            </Card>
-            <Card>
-              <Card.Content>
-                <Card.Description style={{ marginBottom: 8 }}>
-                  ชิพเริ่มต้น
-                </Card.Description>
-                <Card.Meta>{numeral(botSetting.init_bet).format("0,0")}</Card.Meta>
-              </Card.Content>
-            </Card>
-            <Card>
-              <Card.Content>
-                <Card.Description style={{ marginBottom: 8 }}>
-                  กำไรเป้าหมาย
-                </Card.Description>
-                <Card.Meta>{botSetting.profit_percent}%</Card.Meta>
-              </Card.Content>
-            </Card>
-            <Card>
-              <Card.Content>
-                <Card.Description style={{ marginBottom: 8 }}>
-                  Stop Loss
-                </Card.Description>
-                <Card.Meta>{botSetting.loss_percent}%</Card.Meta>
-              </Card.Content>
-            </Card>
-          </Card.Group>
-        </>
-      )}
-    </Container>
+            <Divider section />
+            <p>การตั้งค่า</p>
+            <Card.Group>
+              <Card>
+                <Card.Content>
+                  <Card.Description style={{ marginBottom: 8 }}>
+                    รูปแบบการเล่น
+                  </Card.Description>
+                  <Card.Meta>{renderBetSide()}</Card.Meta>
+                </Card.Content>
+              </Card>
+              <Card>
+                <Card.Content>
+                  <Card.Description style={{ marginBottom: 8 }}>
+                    รูปแบบการเติมเงิน
+                  </Card.Description>
+                  <Card.Meta>{renderMoneySystem()}</Card.Meta>
+                </Card.Content>
+              </Card>
+              <Card>
+                <Card.Content>
+                  <Card.Description style={{ marginBottom: 8 }}>
+                    ชิพเริ่มต้น
+                  </Card.Description>
+                  <Card.Meta>
+                    {numeral(botSetting.init_bet).format("0,0")}
+                  </Card.Meta>
+                </Card.Content>
+              </Card>
+              <Card>
+                <Card.Content>
+                  <Card.Description style={{ marginBottom: 8 }}>
+                    กำไรเป้าหมาย
+                  </Card.Description>
+                  <Card.Meta>
+                    {botSetting.profit_percent}% ({calculateProfit()}/
+                    {calculateProfitTarget()})
+                  </Card.Meta>
+                </Card.Content>
+              </Card>
+              <Card>
+                <Card.Content>
+                  <Card.Description style={{ marginBottom: 8 }}>
+                    Stop Loss
+                  </Card.Description>
+                  <Card.Meta>
+                    {botSetting.loss_percent}% ({calculateLoss()}/
+                    {calculateLossTarget()})
+                  </Card.Meta>
+                </Card.Content>
+              </Card>
+            </Card.Group>
+          </>
+        )}
+      </Container>
+      <Modal
+        basic
+        onClose={() => setIsShownConfirmStop(false)}
+        onOpen={() => setIsShownConfirmStop(true)}
+        open={isShownConfirmStop}
+        size="small"
+        closeOnDimmerClick={false}
+      >
+        <Header icon>คุณต้องการปิดบอทใช่หรือใช่ไหม</Header>
+        <Modal.Actions>
+          <Button onClick={() => setIsShownConfirmStop(false)}>
+            <Icon name="remove" /> ไม่ใช่
+          </Button>
+          <Button color="teal" onClick={stop}>
+            <Icon name="checkmark" /> ใช่
+          </Button>
+        </Modal.Actions>
+      </Modal>
+    </>
   );
 };
 

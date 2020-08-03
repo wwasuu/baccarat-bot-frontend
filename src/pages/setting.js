@@ -16,6 +16,7 @@ import { bot_setting_set } from "../store";
 
 const Setting = () => {
   const botSetting = useSelector((state) => state.botSetting);
+  const balance = useSelector((state) => state.balance);
   const dispatch = useDispatch();
   return (
     <>
@@ -91,35 +92,47 @@ const Setting = () => {
                   }
                 />
                 <Card
-                  className={cn({ active: botSetting.money_system === 2 })}
+                  className={cn({
+                    active: botSetting.money_system === 2,
+                    disable: balance < 2500,
+                  })}
                   header="การเดินเงินแบบทบ 5 ไม้ มาติงเกลพิเศษ"
                   description="เหมาะสำหรับการลงทุนระยะสั้น
-                จะเดินเงิน  50-100-250-600-1500 (ทุน2500)"
-                  onClick={() =>
-                    dispatch(
+                จะเดินเงิน  50-100-250-600-1500 (ทุน 2,500)"
+                  onClick={() => {
+                    if (balance < 2500) return;
+                    return dispatch(
                       bot_setting_set({ ...botSetting, money_system: 2 })
-                    )
-                  }
+                    );
+                  }}
                 />
                 <Card
-                  className={cn({ active: botSetting.money_system === 3 })}
+                  className={cn({
+                    active: botSetting.money_system === 3,
+                    disable: balance < 1000,
+                  })}
                   header="การเดินเงินแบบลาบูแชร์"
-                  description="คือการแบ่งกองเงินออกเป็นกองๆ กองละเท่าๆกัน (ทุน1000เปิดใช้งาน)"
-                  onClick={() =>
-                    dispatch(
+                  description="คือการแบ่งกองเงินออกเป็นกองๆ กองละเท่าๆกัน (ทุน 1,000 เปิดใช้งาน)"
+                  onClick={() => {
+                    if (balance < 1000) return;
+                    return dispatch(
                       bot_setting_set({ ...botSetting, money_system: 3 })
-                    )
-                  }
+                    );
+                  }}
                 />
                 <Card
-                  className={cn({ active: botSetting.money_system === 4 })}
+                  className={cn({
+                    active: botSetting.money_system === 4,
+                    disable: balance < 5000,
+                  })}
                   header="การเดินเงินแบบ X sytem"
-                  description="จะบริหารเงินให้อย่างเหมาะสม (ทุน5000เปิดใช้งาน)"
-                  onClick={() =>
-                    dispatch(
+                  description="จะบริหารเงินให้อย่างเหมาะสม (ทุน 5,000 เปิดใช้งาน)"
+                  onClick={() => {
+                    if (balance < 5000) return;
+                    return dispatch(
                       bot_setting_set({ ...botSetting, money_system: 4 })
-                    )
-                  }
+                    );
+                  }}
                 />
               </Card.Group>
             </Container>
@@ -267,7 +280,7 @@ const Setting = () => {
               <Header as="h3" style={{ color: "#fff" }}>
                 กำหนดขาดทุนไม่เกิน
               </Header>
-              <p>ข้อแนะนำ</p>
+              <p>ข้อแนะนำ แนะนำให้ตั้ง 3 เท่าของกำไรที่เป้าหมาย </p>
 
               <Form.Select
                 value={botSetting.loss_percent}

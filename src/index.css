@@ -102,9 +102,15 @@ code {
   position: fixed;
   width: 100%;
   display: flex;
-  justify-content: flex-end;
-  padding: 8px;
+  justify-content: space-between;
+  padding: 16px;
   z-index: 100;
+  background-color: hsl(0, 0%, 18%);
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 1px 6px 2px;
+}
+
+.navbar > img {
+  height: 32px;
 }
 
 .ui.cards a.card:hover, .ui.link.card:hover, .ui.link.cards .card:hover, a.ui.card:hover {
@@ -122,6 +128,7 @@ code {
   height: 100vh;
   background-color: #212121;
   overflow: hidden;
+  padding-top: 68px !important;
 }
 
 .content-container-a {
@@ -136,13 +143,13 @@ code {
 }
 
 .content-container-c {
-  padding: 24px !important;
+  padding: 24px 24px 68px 24px !important;
   overflow: auto; 
   height: 100vh;
 }
 
 .statistic-container {
-  margin-top: 48px;
+  margin-top: 48px !important;
 }
 
 .progress-info {
@@ -174,4 +181,61 @@ p {
     padding: 24px !important;
     height: auto;
   }
+}
+
+.disable {
+  cursor: not-allowed !important;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.ui.message .header+p {
+  color: #9f3a38 !important; 
+}
+
+.error.field .ui.icon.input>i.icon:not(.link) {
+  color: #9f3a38 !important; 
+}
+
+.switch-group {
+  margin-bottom: 16px;
+}
+
+.switch-group > .checkbox {
+  margin-right: 32px;
+
+}
+
+.ui.toggle.checkbox .box, .ui.toggle.checkbox label {
+  color: #fff;
+}
+
+.ui.toggle.checkbox .box:before, .ui.toggle.checkbox label:before {
+  background-color: hsl(0, 0%, 18%);
+}
+
+.ui.toggle.checkbox input:focus~.box:before, .ui.toggle.checkbox input:focus~label:before {
+  background-color: hsl(0, 0%, 18%);
+}
+
+.ui.checkbox input:focus~label {
+  color: #fff !important;
+}
+
+.ui.toggle.checkbox input:focus:checked~.box:before, .ui.toggle.checkbox input:focus:checked~label:before {
+  background-color: #00b5ad !important;
+}
+
+.ui.toggle.checkbox input:focus:checked~.box, .ui.toggle.checkbox input:focus:checked~label {
+  color: #fff !important; 
+}
+
+.ui.toggle.checkbox input:checked~.box:before, .ui.toggle.checkbox input:checked~label:before {
+  background-color: #00b5ad !important;
+}
+
+.ui.toggle.checkbox input:checked~.box, .ui.toggle.checkbox input:checked~label {
+  color: #fff !important;
 }

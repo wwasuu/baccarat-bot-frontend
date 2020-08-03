@@ -15,6 +15,7 @@ const Navbar = () => {
   }
   return (
     <div className="navbar">
+      <img src="/logo.png" alt="logo" />
       <Button circular color="teal" size="medium" basic icon="log out" onClick={logout} />
     </div>
   );

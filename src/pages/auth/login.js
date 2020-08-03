@@ -13,6 +13,7 @@ import {
   Icon,
   Segment,
   Statistic,
+  Message,
 } from "semantic-ui-react";
 import { auth_loading, auth_login } from "../../store";
 
@@ -22,12 +23,32 @@ const Login = () => {
   const auth = useSelector((state) => state.auth);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [errorUsername, setErrorUsername] = useState(null);
+  const [errorPassword, setErrorPassword] = useState(null);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   async function login() {
     try {
-      dispatch(auth_loading());
+      if (!username.trim() || !password.trim()) {
+        if (!username.trim()) {
+          setErrorUsername({
+            content: "กรุณากรอกรบัญชีผู้ใช้",
+            pointing: "below",
+          });
+        }
+        if (!password.trim()) {
+          setErrorPassword({
+            content: "กรุณากรอกรหัสผ่าน",
+            pointing: "below",
+          });
+        }
+        return;
+      }
+      setIsAuthenticating(true);
+      clearError()
       const {
-        data: { data, success },
+        data: { data, success, message },
       } = await axios.post("https://api.ibot.bet/login", {
         username,
         password,
@@ -51,20 +72,39 @@ const Login = () => {
             username: data.username,
           })
         );
+        history.push("/setting");
+      } else {
+        setError(message);
       }
-      history.push("/setting");
+      
     } catch (error) {
       console.log("Error while call login()", error);
+      setError("กรุณาลองใหม่อีกครั้ง");
     }
+    setIsAuthenticating(false);
+  }
+
+  function handleChangeUsername(e) {
+    setUsername(e.target.value);
+    clearError();
+  }
+
+  function handleChangePassword(e) {
+    setPassword(e.target.value);
+    clearError();
+  }
+
+  function clearError() {
+    setError("");
+    setErrorUsername(null);
+    setErrorPassword(null);
   }
 
   return (
-    <Grid
-      textAlign="center"
-      className="main-container"
-    >
+    <Grid className="main-container">
       <Grid.Row>
         <Grid.Column
+          textAlign="center"
           mobile={16}
           tablet={16}
           computer={8}
@@ -134,42 +174,54 @@ const Login = () => {
           verticalAlign="middle"
           className="content-container-b"
         >
+          <div className="text-center" style={{ marginBottom: 32 }}>
+            <img src="/logo.png" alt="logo" />
+          </div>
           <Header as="h2" style={{ color: "#fff" }} textAlign="left">
-            Log-in to your account
+            เข้าสู่บัญชีของคุณ
           </Header>
-          <Form size="large">
+          <Form size="large" error={error}>
             <Segment stacked>
               <Form.Input
+                error={errorUsername}
                 fluid
                 icon="user"
                 iconPosition="left"
-                placeholder="Username"
-                onChange={(e) => setUsername(e.target.value)}
+                placeholder="บัญชีผู้ใช้"
+                onChange={handleChangeUsername}
               />
               <Form.Input
+                error={errorPassword}
                 fluid
                 icon="lock"
                 iconPosition="left"
-                placeholder="Password"
+                placeholder="รหัสผ่าน"
                 type="password"
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={handleChangePassword}
               />
+
+              <Message error header="เกิดข้อผิดพลาด" content={error} />
 
               <Button
                 color="teal"
                 fluid
                 size="large"
                 onClick={login}
-                loading={auth.loading}
+                loading={isAuthenticating}
               >
-                Login
+                เข้าสู่ระบบ
               </Button>
             </Segment>
-            <Form.Field>
-              Don't Have an Account? <a href="http://truthbet.com/friends/invite/vyKslk17Uz">Sign Up</a>
+            <Form.Field className="text-center">
+              คุณยังไม่มีบัญชีใช่ไหม?{" "}
+              <a href="http://truthbet.com/friends/invite/vyKslk17Uz">สมัคร</a>
             </Form.Field>
           </Form>
-          <Statistic.Group className="statistic-container" widths="three" size="tiny">
+          <Statistic.Group
+            className="statistic-container"
+            widths="three"
+            size="tiny"
+          >
             <Statistic>
               <Statistic.Label>
                 <Icon name="user" color="teal" />
