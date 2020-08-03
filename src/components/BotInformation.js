@@ -28,6 +28,8 @@ import {
   bot_transaction_set
 } from "../store";
 
+import BotGraph from './BotGraph'
+
 function compare(a, b) {
   if (a.id < b.id) {
     return -1;
@@ -342,7 +344,9 @@ const BotInformation = () => {
         :
         <Progress percent={0} active progress color="teal" size="small" />
       }
-      
+      {(botState === "SETTING") && (
+        <BotGraph></BotGraph>
+      )}
       {(botState === "START" || botState === "PAUSE") && (
         <>
           <Divider section />
