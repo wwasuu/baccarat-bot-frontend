@@ -139,22 +139,32 @@ const BotInformation = () => {
 
   async function start() {
     try {
-      const {
-        data: { data, success },
-      } = await axios.post("https://api.ibot.bet/bot", {
-        ...botSetting,
-        username: auth.username,
-      });
-      if (success) {
-        dispatch(
-          bot_setting_init({
-            ...data,
-          })
-        );
-
-        dispatch(auth_setbot({ ...data }));
+      const bot_id = botSetting.id
+      if (bot_id) {
+        const {
+          data: { data, success },
+        } = await axios.post("https://api.ibot.bet/start", {
+          username: auth.username,
+        });
         setBotState("START");
-        history.push("/bot");
+      } else {
+        const {
+          data: { data, success },
+        } = await axios.post("https://api.ibot.bet/bot", {
+          ...botSetting,
+          username: auth.username,
+        });
+        if (success) {
+          dispatch(
+            bot_setting_init({
+              ...data,
+            })
+          );
+
+          dispatch(auth_setbot({ ...data }));
+          setBotState("START");
+          history.push("/bot");
+        }
       }
     } catch (error) {
       console.log("Error while call start()", error);

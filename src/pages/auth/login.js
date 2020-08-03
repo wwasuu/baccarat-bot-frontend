@@ -155,6 +155,7 @@ const Login = () => {
           verticalAlign="middle"
           className="content-container-b"
         >
+          <img src="/logo.png" alt="logo" style={{marginBottom: 32}} />
           <Header as="h2" style={{ color: "#fff" }} textAlign="left">
             Log-in to your account
           </Header>

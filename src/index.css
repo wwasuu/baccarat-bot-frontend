@@ -102,9 +102,15 @@ code {
   position: fixed;
   width: 100%;
   display: flex;
-  justify-content: flex-end;
-  padding: 8px;
+  justify-content: space-between;
+  padding: 16px;
   z-index: 100;
+  background-color: hsl(0, 0%, 18%);
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 1px 6px 2px;
+}
+
+.navbar > img {
+  height: 32px;
 }
 
 .ui.cards a.card:hover, .ui.link.card:hover, .ui.link.cards .card:hover, a.ui.card:hover {
@@ -122,6 +128,7 @@ code {
   height: 100vh;
   background-color: #212121;
   overflow: hidden;
+  padding-top: 68px !important;;
 }
 
 .content-container-a {
@@ -142,7 +149,7 @@ code {
 }
 
 .statistic-container {
-  margin-top: 48px;
+  margin-top: 48px !important;
 }
 
 .progress-info {
