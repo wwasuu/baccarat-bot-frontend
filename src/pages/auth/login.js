@@ -188,7 +188,7 @@ const Login = () => {
               </Button>
             </Segment>
             <Form.Field>
-              Don't Have an Account? <a href="#">Sign Up</a>
+              Don't Have an Account? <a href="http://truthbet.com/friends/invite/vyKslk17Uz">Sign Up</a>
             </Form.Field>
           </Form>
           <Statistic.Group className="statistic-container" widths="three" size="tiny">
