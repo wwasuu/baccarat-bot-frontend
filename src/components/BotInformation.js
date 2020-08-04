@@ -9,12 +9,13 @@ import {
   Button,
   Card,
   Container,
-  Divider, 
+  Divider,
   Header,
   Icon,
   Modal,
-  Progress
+  Progress,
 } from "semantic-ui-react";
+import BotGraph from "./BotGraphs";
 import {
   auth_setbot,
   balance_set,
@@ -23,7 +24,7 @@ import {
   bot_setting_init,
   bot_setting_set,
   bot_transaction_set,
-  error_bot_setting_set
+  error_bot_setting_set,
 } from "../store";
 
 function compare(a, b) {
@@ -95,7 +96,6 @@ const BotInformation = () => {
         axios.get(`https://api.ibot.bet/user_bot/${id}`),
         axios.get(`https://api.ibot.bet/wallet/${id}`),
       ]);
-      console.log(botData)
       if (botData.success && botData.data.bot) {
         dispatch(
           balance_set(walletData.data.myWallet.MAIN_WALLET.chips.credit)
@@ -179,10 +179,12 @@ const BotInformation = () => {
           username: auth.username,
         });
         if (success) {
-          dispatch(bot_setting_set({
-            ...botSetting,
-            status: 1
-          }))
+          dispatch(
+            bot_setting_set({
+              ...botSetting,
+              status: 1,
+            })
+          );
         }
       }
     } catch (error) {
@@ -192,14 +194,18 @@ const BotInformation = () => {
 
   async function pause() {
     try {
-      const { data: { success } } = axios.post("https://api.ibot.bet/pause", {
+      const {
+        data: { success },
+      } = axios.post("https://api.ibot.bet/pause", {
         username: auth.username,
       });
       if (success) {
-        dispatch(bot_setting_set({
-          ...botSetting,
-          status: 2
-        }))
+        dispatch(
+          bot_setting_set({
+            ...botSetting,
+            status: 2,
+          })
+        );
       }
     } catch (error) {
       console.log("Error while call pause()", error);
@@ -274,14 +280,6 @@ const BotInformation = () => {
         return "การเดินเงินแบบ X sytem";
       default:
         return "";
-    }
-  }
-
-  function toggleBetSide(value) {
-    if (betSide.indexOf(value) >= 0) {
-      setBetSide(betSide.filter((x) => x !== value));
-    } else {
-      setBetSide([...betSide, value]);
     }
   }
 
@@ -381,7 +379,7 @@ const BotInformation = () => {
           )}
         </div>
         <div className="progress-info">
-          {(botSetting.status === 1 || botSetting.status === 2) ? (
+          {botSetting.status === 1 || botSetting.status === 2 ? (
             <div>
               {calculateProfit()}/{calculateProfitTarget()} (
               {calculateProgressPercent()}%)
@@ -390,7 +388,7 @@ const BotInformation = () => {
             <div>0/0 (0%)</div>
           )}
         </div>
-        {(botSetting.status === 1 || botSetting.status === 2) ? (
+        {botSetting.status === 1 || botSetting.status === 2 ? (
           <Progress
             percent={calculateProgressPercent()}
             active
@@ -401,41 +399,10 @@ const BotInformation = () => {
         ) : (
           <Progress percent={0} active progress color="teal" size="small" />
         )}
+        {!botSetting.id && <BotGraph />}
         {(botSetting.status === 1 || botSetting.status === 2) && (
           <>
             <Divider section />
-            <div className="switch-group">
-              <div
-                class="ui toggle checkbox"
-                onClick={() => toggleBetSide("PLAYER/BANKER")}
-              >
-                <input
-                  type="checkbox"
-                  checked={betSide.indexOf("PLAYER/BANKER") > -1}
-                />
-                <label>Player/Banker</label>
-              </div>
-              <div
-                class="ui toggle checkbox"
-                onClick={() => toggleBetSide("PLAYER")}
-              >
-                <input
-                  type="checkbox"
-                  checked={betSide.indexOf("PLAYER") > -1}
-                />
-                <label>Player</label>
-              </div>
-              <div
-                class="ui toggle checkbox"
-                onClick={() => toggleBetSide("BANKER")}
-              >
-                <input
-                  type="checkbox"
-                  checked={betSide.indexOf("BANKER") > -1}
-                />
-                <label>Banker</label>
-              </div>
-            </div>
             <Card fluid>
               <Chart
                 type="area"

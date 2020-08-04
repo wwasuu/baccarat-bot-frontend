@@ -1,6 +1,5 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import Chart from "react-apexcharts";
 import { Card, Container, Grid, Header } from "semantic-ui-react";
 import { useHistory } from "react-router-dom";
 import BotInformation from "../components/BotInformation";
@@ -9,7 +8,7 @@ import { socket } from "./socket";
 import { useSelector, useDispatch } from "react-redux";
 import { Menu, Icon, Table } from "semantic-ui-react";
 import { bot_transaction_set, balance_set, bot_setting_clear } from "../store";
-import { unformat } from "numeral";
+import BotGraph from "../components/BotGraphs";
 
 function compare(a, b) {
   if (a.id < b.id) {
@@ -27,82 +26,10 @@ const Setting = () => {
   const dispatch = useDispatch();
   const history = useHistory();
   var [tableData, setTableData] = useState([]);
-  var [graphData, setGraph] = useState([
-    {
-      name: "แพ้",
-      data: [],
-    },
-  ]);
-  var [start, setStart] = useState(5);
-  const chart = {
-    options: {
-      chart: {
-        toolbar: false,
-      },
-      dataLabels: {
-        enabled: false,
-      },
-      stroke: {
-        curve: "smooth",
-        width: 0,
-      },
-      grid: {
-        show: false,
-      },
-      colors: ["#de1245", "#00b5ad"],
-      xaxis: {
-        labels: {
-          show: false,
-        },
-        axisBorder: {
-          show: false,
-        },
-        tooltip: {
-          show: false,
-        },
-        crosshairs: {
-          show: false,
-        },
-      },
-      yaxis: {
-        labels: {
-          show: false,
-        },
-        tooltip: {
-          show: false,
-        },
-        crosshairs: {
-          show: false,
-        },
-      },
-      fill: {
-        type: 'gradient'
-      },
-      legend: {
-        show: false,
-      },
-      title: {
-        text: "ภาพรวมบอท",
-        align: "left",
-        style: {
-          color: "#fff",
-        },
-      },
-      tooltip: {
-        enabled: true,
-        custom: function({series, seriesIndex, dataPointIndex, w}) {
-          return '<div class="graph_tooltip">' +
-            '<span>' + series[seriesIndex][dataPointIndex] + '</span>' +
-            '</div>'
-        }
-      },
-    },
-  };
-
+  
   const [bet, setBet] = useState({});
 
   useEffect(() => {
-    getBotTransaction();
     getUserTransaction();
     // getUserBotTransaction();
     subscribeBot();
@@ -123,9 +50,8 @@ const Setting = () => {
           }, 1000)
         } else {
           setBet({})
-          getUserBotTransaction();
-          getBotTransaction();
           getUserTransaction();
+          getUserBotTransaction();
         }
       }
     });
@@ -173,45 +99,6 @@ const Setting = () => {
       console.log("error while call getUserBotTransaction()", error);
     }
   }
-
-  async function getBotTransaction() {
-    try {
-      const {
-        data: { data, success },
-      } = await axios.get("https://api.ibot.bet/bot_transaction");
-      let newData = data.sort(compare);
-      let graph = [
-        {
-          name: "แพ้",
-          data: [],
-        },
-        {
-          name: "ชนะ",
-          data: [],
-        },
-      ];
-      let offset = 0 - newData[0].point
-      newData.forEach((element) => {
-        let newPoint = element.point + offset;
-        if(newPoint === 0){
-          graph[1].data.push(newPoint);
-          graph[0].data.push(newPoint);
-        }else if(newPoint < 0){
-          graph[1].data.push(0);
-          graph[0].data.push(newPoint);
-        }else if(newPoint > 0){
-          graph[1].data.push(newPoint);
-          graph[0].data.push(0);
-        }
-        
-        
-      });
-      setGraph(graph);
-    } catch (error) {
-      console.log("error while call getBotTransaction()", error);
-    }
-  }
-
   return (
     <>
       <Navbar />
@@ -236,15 +123,7 @@ const Setting = () => {
                 โปรแกรมเติมพันอัตโนมัติ
               </Header>
               <p>กำลังเล่นบอทบาคาร่า</p>
-
-              <Card fluid>
-                <Chart
-                  type="area"
-                  options={chart.options}
-                  series={graphData}
-                  height="240"
-                />
-              </Card>
+              <BotGraph></BotGraph>
             </Container>
             <Container text fluid>
               <Header as="h2" style={{ color: "#fff" }}>
