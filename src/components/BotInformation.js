@@ -17,6 +17,7 @@ import Chart from "react-apexcharts";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import numeral from "numeral";
+import BotGraph from './BotGraphs'
 import {
   balance_set,
   bot_setting_set,
@@ -24,9 +25,9 @@ import {
   auth_setbot,
   bot_setting_clear,
   bot_transaction_set,
+  error_bot_setting_set,
+  bot_clear
 } from "../store";
-
-import BotGraph from './BotGraph'
 
 function compare(a, b) {
   if (a.id < b.id) {
@@ -101,18 +102,18 @@ const BotInformation = () => {
     try {
       if (!auth.isLoggedIn) return;
       const id = auth.id;
-      const {
-        data: { data, success },
-      } = await axios.get(`http://localhost/user_bot/${id}`);
-      if (success && data.bot != null) {
-        dispatch(balance_set(data.bot.init_wallet));
+      const [{
+        data: botData,
+      }, { data: walletData }] = await Promise.all([axios.get(`http://localhost/user_bot/${id}`), axios.get(`http://localhost/wallet/${id}`)]);
+      if (botData.data.success && botData.data.bot != null) {
+        dispatch(balance_set(walletData.data.myWallet.MAIN_WALLET.chips.credit));
         dispatch(
           bot_setting_init({
-            ...data.bot,
+            ...botData.data.bot,
           })
         );
 
-        dispatch(auth_setbot({ ...data.bot }));
+        dispatch(auth_setbot({ ...botData.data.bot }));
         setBotState("START");
         history.push("/bot");
       } else {
@@ -155,6 +156,18 @@ const BotInformation = () => {
         });
         setBotState("START");
       } else {
+        let tmpError = []
+        if (!botSetting.loss_percent || !botSetting.profit_percent) {
+          if (!botSetting.profit_percent) {
+            tmpError.push("PROFIT")
+          } 
+          if (!botSetting.loss_percent) {
+            tmpError.push("LOSS")
+          }
+
+          dispatch(error_bot_setting_set(tmpError))
+          return
+        }
         const {
           data: { data, success },
         } = await axios.post("http://localhost/bot", {
@@ -195,6 +208,7 @@ const BotInformation = () => {
         username: auth.username,
       });
       dispatch(bot_setting_clear());
+      dispatch(bot_clear());
       setIsShownConfirmStop(false);
       history.push("/setting");
     } catch (error) {
@@ -338,7 +352,7 @@ const BotInformation = () => {
             </Button>
           )}
           {(botState === "START" || botState === "PAUSE") && (
-            <Button color="red" icon labelPosition="left" onClick={stop}>
+            <Button color="red" icon labelPosition="left" onClick={setIsShownConfirmStop}>
               <Icon name="close" />
               ปิด
             </Button>

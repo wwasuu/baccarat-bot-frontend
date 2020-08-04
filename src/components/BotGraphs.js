@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import axios from "axios";
 import { Checkbox, Card, Container } from 'semantic-ui-react'
 import Chart from "react-apexcharts";
-import { socket } from "./../pages/socket";
+import { socket } from "../pages/socket";
 
 function compare(a, b) {
     if (a.id < b.id) {

@@ -33,7 +33,7 @@ const Login = () => {
       if (!username.trim() || !password.trim()) {
         if (!username.trim()) {
           setErrorUsername({
-            content: "กรุณากรอกรบัญชีผู้ใช้",
+            content: "กรุณากรอกบัญชีผู้ใช้",
             pointing: "below",
           });
         }

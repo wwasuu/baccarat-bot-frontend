@@ -10,7 +10,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { Menu, Icon, Table } from "semantic-ui-react";
 import { bot_transaction_set, balance_set, bot_setting_clear } from "../store";
 import { unformat } from "numeral";
-import BotGraph from "../components/BotGraph";
+import BotGraph from "../components/BotGraphs";
 
 function compare(a, b) {
   if (a.id < b.id) {
@@ -100,7 +100,6 @@ const Setting = () => {
       console.log("error while call getUserBotTransaction()", error);
     }
   }
-
   return (
     <>
       <Navbar />

@@ -239,3 +239,48 @@ p {
 .ui.toggle.checkbox input:checked~.box, .ui.toggle.checkbox input:checked~label {
   color: #fff !important;
 }
+
+.graph_tooltip {
+  padding: 4px;
+  background-color: #212121;
+  color: #fff;
+  border: 1px solid #212121 !important;
+}
+
+.divider-container {
+  width: fit-content;
+}
+
+.ui.divider {
+  color: #fff;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.ui.form input:not([type]):focus, .ui.form input[type=date]:focus, .ui.form input[type=datetime-local]:focus, .ui.form input[type=email]:focus, .ui.form input[type=file]:focus, .ui.form input[type=number]:focus, .ui.form input[type=password]:focus, .ui.form input[type=search]:focus, .ui.form input[type=tel]:focus, .ui.form input[type=text]:focus, .ui.form input[type=time]:focus, .ui.form input[type=url]:focus {
+  background-color: hsl(0, 0%, 18%);
+  color: #fff; 
+}
+
+.error .ui.input>input {
+  background: #fff6f6;
+  border-color: #e0b4b4;
+  color: #9f3a38;
+}
+
+.error .ui.pointing.below.prompt.label {
+  white-space: normal;
+background: #fff!important;
+border: 1px solid #e0b4b4!important;
+color: #9f3a38!important;
+}
