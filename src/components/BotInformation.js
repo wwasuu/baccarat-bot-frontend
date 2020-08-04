@@ -342,7 +342,7 @@ const BotInformation = () => {
             </Button>
           )}
           {(botState === "START" || botState === "PAUSE") && (
-            <Button color="red" icon labelPosition="left" onClick={stop}>
+            <Button color="red" icon labelPosition="left" onClick={setIsShownConfirmStop}>
               <Icon name="close" />
               ปิด
             </Button>
