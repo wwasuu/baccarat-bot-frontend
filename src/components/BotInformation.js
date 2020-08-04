@@ -60,6 +60,7 @@ const BotInformation = () => {
     getUserBot();
   }, [auth.isLoggedIn]);
 
+
   async function getUserBotTransaction() {
     let bot_id = auth.bot_id;
     if (!bot_id) {
@@ -69,7 +70,7 @@ const BotInformation = () => {
       const {
         data: { data, success },
       } = await axios.get(
-        `https://api.ibot.bet/user_bot_transaction/${bot_id}`
+        `http://localhost/user_bot_transaction/${bot_id}`
       );
       let transaction = [0];
       let newData = data.sort(compare);
@@ -102,7 +103,7 @@ const BotInformation = () => {
       const id = auth.id;
       const {
         data: { data, success },
-      } = await axios.get(`https://api.ibot.bet/user_bot/${id}`);
+      } = await axios.get(`http://localhost/user_bot/${id}`);
       if (success && data.bot != null) {
         dispatch(balance_set(data.bot.init_wallet));
         dispatch(
@@ -128,7 +129,7 @@ const BotInformation = () => {
       const id = auth.id;
       const {
         data: { data, success },
-      } = await axios.get(`https://api.ibot.bet/wallet/${id}`);
+      } = await axios.get(`http://localhost/wallet/${id}`);
       if (success) {
         dispatch(balance_set(data.myWallet.MAIN_WALLET.chips.credit));
         dispatch(
@@ -149,14 +150,14 @@ const BotInformation = () => {
       if (bot_id) {
         const {
           data: { data, success },
-        } = await axios.post("https://api.ibot.bet/start", {
+        } = await axios.post("http://localhost/start", {
           username: auth.username,
         });
         setBotState("START");
       } else {
         const {
           data: { data, success },
-        } = await axios.post("https://api.ibot.bet/bot", {
+        } = await axios.post("http://localhost/bot", {
           ...botSetting,
           username: auth.username,
         });
@@ -179,7 +180,7 @@ const BotInformation = () => {
 
   async function pause() {
     try {
-      const res = axios.post("https://api.ibot.bet/pause", {
+      const res = axios.post("http://localhost/pause", {
         username: auth.username,
       });
       setBotState("PAUSE");
@@ -190,7 +191,7 @@ const BotInformation = () => {
 
   async function stop() {
     try {
-      const res = axios.post("https://api.ibot.bet/stop", {
+      const res = axios.post("http://localhost/stop", {
         username: auth.username,
       });
       dispatch(bot_setting_clear());
@@ -258,13 +259,6 @@ const BotInformation = () => {
     }
   }
 
-  function toggleBetSide(value) {
-    if (betSide.indexOf(value) >= 0) {
-      setBetSide(betSide.filter(x => x !== value))
-    } else {
-      setBetSide([...betSide, value])
-    }
-  }
 
   const chart = {
     options: {
@@ -371,23 +365,13 @@ const BotInformation = () => {
         ) : (
           <Progress percent={0} active progress color="teal" size="small" />
         )}
+        { botState == "SETTING" ? (
+          <BotGraph></BotGraph>):
+          <></>
+        }
         {(botState === "START" || botState === "PAUSE") && (
           <>
             <Divider section />
-            <div className="switch-group">
-                <div class="ui toggle checkbox" onClick={() => toggleBetSide("PLAYER/BANKER")}>
-                  <input type="checkbox" checked={betSide.indexOf("PLAYER/BANKER") > -1} />
-                  <label>Player/Banker</label>
-                </div>
-                <div class="ui toggle checkbox" onClick={() => toggleBetSide("PLAYER")}>
-                  <input type="checkbox" checked={betSide.indexOf("PLAYER") > -1} />
-                  <label>Player</label>
-                </div>
-                <div class="ui toggle checkbox" onClick={() => toggleBetSide("BANKER")}>
-                  <input type="checkbox" checked={betSide.indexOf("BANKER") > -1} />
-                  <label>Banker</label>
-                </div>
-              </div>
             <Card fluid>
               <Chart
                 type="area"

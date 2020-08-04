@@ -1,7 +1,7 @@
 import io from "socket.io-client";
 let socket;
 export const initiateSocket = (room) => {
-  socket = io("https://api.ibot.bet");
+  socket = io("http://localhost");
   console.log(`Connecting socket...`);
   if (socket && room) socket.emit("join", room);
 };

@@ -49,7 +49,7 @@ const Login = () => {
       clearError()
       const {
         data: { data, success, message },
-      } = await axios.post("https://api.ibot.bet/login", {
+      } = await axios.post("http://localhost/login", {
         username,
         password,
       });
