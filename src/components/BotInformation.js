@@ -1,31 +1,29 @@
-import React, { useState, useEffect } from "react";
+import axios from "axios";
+import numeral from "numeral";
+import React, { useEffect, useState } from "react";
+import Chart from "react-apexcharts";
 import CountUp from "react-countup";
+import { useDispatch, useSelector } from "react-redux";
+import { useHistory, useLocation } from "react-router-dom";
 import {
   Button,
+  Card,
   Container,
+  Divider, 
   Header,
   Icon,
-  Progress,
-  Divider,
-  Card,
   Modal,
-  Checkbox,
-  Form,
+  Progress
 } from "semantic-ui-react";
-import { useHistory, useLocation } from "react-router-dom";
-import Chart from "react-apexcharts";
-import axios from "axios";
-import { useSelector, useDispatch } from "react-redux";
-import numeral from "numeral";
 import {
-  balance_set,
-  bot_setting_set,
-  bot_setting_init,
   auth_setbot,
+  balance_set,
+  bot_clear,
   bot_setting_clear,
+  bot_setting_init,
+  bot_setting_set,
   bot_transaction_set,
-  error_bot_setting_set,
-  bot_clear
+  error_bot_setting_set
 } from "../store";
 
 function compare(a, b) {
@@ -49,10 +47,9 @@ const BotInformation = () => {
   const [botState, setBotState] = useState("SETTING");
   const [isShownConfirmPause, setIsShownConfirmPause] = useState(false);
   const [isShownConfirmStop, setIsShownConfirmStop] = useState(false);
-  const [betSide, setBetSide] = useState(["PLAYER/BANKER", "PLAYER", "BANKER"])
+  const [betSide, setBetSide] = useState(["PLAYER/BANKER", "PLAYER", "BANKER"]);
 
   useEffect(() => {
-    initBotState();
     getUserBotTransaction();
   }, []);
 
@@ -90,29 +87,25 @@ const BotInformation = () => {
     }
   }
 
-  function initBotState() {
-    if (location.pathname === "/bot") {
-      setBotState("START");
-    }
-  }
-
   async function getUserBot() {
     try {
       if (!auth.isLoggedIn) return;
       const id = auth.id;
-      const [{
-        data: botData,
-      }, { data: walletData }] = await Promise.all([axios.get(`https://api.ibot.bet/user_bot/${id}`), axios.get(`https://api.ibot.bet/wallet/${id}`)]);
-      if (botData.data.success && botData.data.bot != null) {
-        dispatch(balance_set(walletData.data.myWallet.MAIN_WALLET.chips.credit));
+      const [{ data: botData }, { data: walletData }] = await Promise.all([
+        axios.get(`https://api.ibot.bet/user_bot/${id}`),
+        axios.get(`https://api.ibot.bet/wallet/${id}`),
+      ]);
+      console.log(botData)
+      if (botData.success && botData.data.bot) {
+        dispatch(
+          balance_set(walletData.data.myWallet.MAIN_WALLET.chips.credit)
+        );
         dispatch(
           bot_setting_init({
             ...botData.data.bot,
           })
         );
-
         dispatch(auth_setbot({ ...botData.data.bot }));
-        setBotState("START");
         history.push("/bot");
       } else {
         getWallet();
@@ -143,45 +136,53 @@ const BotInformation = () => {
     }
   }
 
+  async function create() {
+    let tmpError = [];
+    if (!botSetting.loss_percent || !botSetting.profit_percent) {
+      if (!botSetting.profit_percent) {
+        tmpError.push("PROFIT");
+      }
+      if (!botSetting.loss_percent) {
+        tmpError.push("LOSS");
+      }
+      dispatch(error_bot_setting_set(tmpError));
+      return;
+    }
+    try {
+      const {
+        data: { data, success },
+      } = await axios.post("https://api.ibot.bet/bot", {
+        ...botSetting,
+        username: auth.username,
+      });
+      if (success) {
+        dispatch(
+          bot_setting_init({
+            ...data,
+          })
+        );
+        dispatch(auth_setbot({ ...data }));
+        history.push("/bot");
+      }
+    } catch (error) {
+      console.log("Error while call create()", error);
+    }
+  }
+
   async function start() {
     try {
       const bot_id = botSetting.id;
       if (bot_id) {
         const {
-          data: { data, success },
+          data: { success },
         } = await axios.post("https://api.ibot.bet/start", {
           username: auth.username,
         });
-        setBotState("START");
-      } else {
-        let tmpError = []
-        if (!botSetting.loss_percent || !botSetting.profit_percent) {
-          if (!botSetting.profit_percent) {
-            tmpError.push("PROFIT")
-          } 
-          if (!botSetting.loss_percent) {
-            tmpError.push("LOSS")
-          }
-
-          dispatch(error_bot_setting_set(tmpError))
-          return
-        }
-        const {
-          data: { data, success },
-        } = await axios.post("https://api.ibot.bet/bot", {
-          ...botSetting,
-          username: auth.username,
-        });
         if (success) {
-          dispatch(
-            bot_setting_init({
-              ...data,
-            })
-          );
-
-          dispatch(auth_setbot({ ...data }));
-          setBotState("START");
-          history.push("/bot");
+          dispatch(bot_setting_set({
+            ...botSetting,
+            status: 1
+          }))
         }
       }
     } catch (error) {
@@ -191,10 +192,15 @@ const BotInformation = () => {
 
   async function pause() {
     try {
-      const res = axios.post("https://api.ibot.bet/pause", {
+      const { data: { success } } = axios.post("https://api.ibot.bet/pause", {
         username: auth.username,
       });
-      setBotState("PAUSE");
+      if (success) {
+        dispatch(bot_setting_set({
+          ...botSetting,
+          status: 2
+        }))
+      }
     } catch (error) {
       console.log("Error while call pause()", error);
     }
@@ -273,9 +279,9 @@ const BotInformation = () => {
 
   function toggleBetSide(value) {
     if (betSide.indexOf(value) >= 0) {
-      setBetSide(betSide.filter(x => x !== value))
+      setBetSide(betSide.filter((x) => x !== value));
     } else {
-      setBetSide([...betSide, value])
+      setBetSide([...betSide, value]);
     }
   }
 
@@ -289,7 +295,7 @@ const BotInformation = () => {
       },
       stroke: {
         curve: "smooth",
-        width: 1,
+        width: 0,
       },
       grid: {
         show: false,
@@ -344,27 +350,38 @@ const BotInformation = () => {
           <CountUp end={balance} separator="," decimals={2} />
         </Header>
         <div style={{ marginBottom: 24 }}>
-          {(botState === "SETTING" || botState === "PAUSE") && (
+          {!botSetting.id && (
+            <Button color="blue" icon labelPosition="left" onClick={create}>
+              สร้าง
+              <Icon name="save" />
+            </Button>
+          )}
+          {botSetting.status === 2 && (
             <Button color="teal" icon labelPosition="left" onClick={start}>
               เริ่ม
               <Icon name="play" />
             </Button>
           )}
-          {botState === "START" && (
+          {botSetting.status === 1 && (
             <Button color="yellow" icon labelPosition="left" onClick={pause}>
               <Icon name="pause" />
               หยุด
             </Button>
           )}
-          {(botState === "START" || botState === "PAUSE") && (
-            <Button color="red" icon labelPosition="left" onClick={setIsShownConfirmStop}>
+          {(botSetting.status === 1 || botSetting.status === 2) && (
+            <Button
+              color="red"
+              icon
+              labelPosition="left"
+              onClick={setIsShownConfirmStop}
+            >
               <Icon name="close" />
               ปิด
             </Button>
           )}
         </div>
         <div className="progress-info">
-          {botState === "START" || botState === "PAUSE" ? (
+          {(botSetting.status === 1 || botSetting.status === 2) ? (
             <div>
               {calculateProfit()}/{calculateProfitTarget()} (
               {calculateProgressPercent()}%)
@@ -373,7 +390,7 @@ const BotInformation = () => {
             <div>0/0 (0%)</div>
           )}
         </div>
-        {botState === "START" || botState === "PAUSE" ? (
+        {(botSetting.status === 1 || botSetting.status === 2) ? (
           <Progress
             percent={calculateProgressPercent()}
             active
@@ -384,23 +401,41 @@ const BotInformation = () => {
         ) : (
           <Progress percent={0} active progress color="teal" size="small" />
         )}
-        {(botState === "START" || botState === "PAUSE") && (
+        {(botSetting.status === 1 || botSetting.status === 2) && (
           <>
             <Divider section />
             <div className="switch-group">
-                <div class="ui toggle checkbox" onClick={() => toggleBetSide("PLAYER/BANKER")}>
-                  <input type="checkbox" checked={betSide.indexOf("PLAYER/BANKER") > -1} />
-                  <label>Player/Banker</label>
-                </div>
-                <div class="ui toggle checkbox" onClick={() => toggleBetSide("PLAYER")}>
-                  <input type="checkbox" checked={betSide.indexOf("PLAYER") > -1} />
-                  <label>Player</label>
-                </div>
-                <div class="ui toggle checkbox" onClick={() => toggleBetSide("BANKER")}>
-                  <input type="checkbox" checked={betSide.indexOf("BANKER") > -1} />
-                  <label>Banker</label>
-                </div>
+              <div
+                class="ui toggle checkbox"
+                onClick={() => toggleBetSide("PLAYER/BANKER")}
+              >
+                <input
+                  type="checkbox"
+                  checked={betSide.indexOf("PLAYER/BANKER") > -1}
+                />
+                <label>Player/Banker</label>
               </div>
+              <div
+                class="ui toggle checkbox"
+                onClick={() => toggleBetSide("PLAYER")}
+              >
+                <input
+                  type="checkbox"
+                  checked={betSide.indexOf("PLAYER") > -1}
+                />
+                <label>Player</label>
+              </div>
+              <div
+                class="ui toggle checkbox"
+                onClick={() => toggleBetSide("BANKER")}
+              >
+                <input
+                  type="checkbox"
+                  checked={betSide.indexOf("BANKER") > -1}
+                />
+                <label>Banker</label>
+              </div>
+            </div>
             <Card fluid>
               <Chart
                 type="area"

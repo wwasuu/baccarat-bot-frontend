@@ -44,7 +44,7 @@ const Setting = () => {
       },
       stroke: {
         curve: "smooth",
-        width: 1,
+        width: 0,
       },
       grid: {
         show: false,
@@ -290,8 +290,7 @@ const Setting = () => {
 
                 <Table.Body>
                   {tableData.map((element) => (
-                    <>
-                      <Table.Row>
+                      <Table.Row key={element.id}>
                         <Table.Cell>{element.game_info}</Table.Cell>
                         <Table.Cell>
                           {Object.keys(element.bet.data.credit)[0]}
@@ -304,7 +303,6 @@ const Setting = () => {
                         </Table.Cell>
                         <Table.Cell>{element.bet_time}</Table.Cell>
                       </Table.Row>
-                    </>
                   ))}
                 </Table.Body>
                 <Table.Footer>
