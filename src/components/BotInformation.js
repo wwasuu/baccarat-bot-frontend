@@ -24,6 +24,8 @@ import {
   auth_setbot,
   bot_setting_clear,
   bot_transaction_set,
+  error_bot_setting_set,
+  bot_clear
 } from "../store";
 
 function compare(a, b) {
@@ -98,18 +100,18 @@ const BotInformation = () => {
     try {
       if (!auth.isLoggedIn) return;
       const id = auth.id;
-      const {
-        data: { data, success },
-      } = await axios.get(`https://api.ibot.bet/user_bot/${id}`);
-      if (success && data.bot != null) {
-        dispatch(balance_set(data.bot.init_wallet));
+      const [{
+        data: botData,
+      }, { data: walletData }] = await Promise.all([axios.get(`https://api.ibot.bet/user_bot/${id}`), axios.get(`https://api.ibot.bet/wallet/${id}`)]);
+      if (botData.data.success && botData.data.bot != null) {
+        dispatch(balance_set(walletData.data.myWallet.MAIN_WALLET.chips.credit));
         dispatch(
           bot_setting_init({
-            ...data.bot,
+            ...botData.data.bot,
           })
         );
 
-        dispatch(auth_setbot({ ...data.bot }));
+        dispatch(auth_setbot({ ...botData.data.bot }));
         setBotState("START");
         history.push("/bot");
       } else {
@@ -152,6 +154,18 @@ const BotInformation = () => {
         });
         setBotState("START");
       } else {
+        let tmpError = []
+        if (!botSetting.loss_percent || !botSetting.profit_percent) {
+          if (!botSetting.profit_percent) {
+            tmpError.push("PROFIT")
+          } 
+          if (!botSetting.loss_percent) {
+            tmpError.push("LOSS")
+          }
+
+          dispatch(error_bot_setting_set(tmpError))
+          return
+        }
         const {
           data: { data, success },
         } = await axios.post("https://api.ibot.bet/bot", {
@@ -192,6 +206,7 @@ const BotInformation = () => {
         username: auth.username,
       });
       dispatch(bot_setting_clear());
+      dispatch(bot_clear());
       setIsShownConfirmStop(false);
       history.push("/setting");
     } catch (error) {
@@ -369,7 +384,6 @@ const BotInformation = () => {
         ) : (
           <Progress percent={0} active progress color="teal" size="small" />
         )}
-
         {(botState === "START" || botState === "PAUSE") && (
           <>
             <Divider section />

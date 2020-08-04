@@ -18,6 +18,10 @@ const auth_setbot = (payload) => ({
   payload,
 });
 
+const bot_clear = () => ({
+  type: "AUTH/CLEAR_BOT",
+});
+
 const initialAuthState = {
   id: "",
   bot_id: "",
@@ -51,8 +55,8 @@ const bot_setting_init = (payload) => ({
 const initialBotSettingState = {
   bet_side: 1,
   money_system: 1,
-  profit_percent: 1,
-  loss_percent: 1,
+  profit_percent: "",
+  loss_percent: "",
   profit_threshold: 0,
   loss_threshold: 0,
   init_wallet: 0,
@@ -67,6 +71,12 @@ const auth = (state = initialAuthState, action) => {
       state = {
         ...state,
         bot_id: action.payload.id,
+      };
+      break;
+    case "AUTH/CLEAR_BOT":
+      state = {
+        ...state,
+        bot_id: null,
       };
       break;
     case "AUTH/LOGIN":
@@ -165,11 +175,38 @@ const botTransaction = (state = initialBotTransaction, action) => {
   return state;
 };
 
+const initialErrorBotSetting = [];
+
+const error_bot_setting_set = (payload) => ({
+  type: "ERROR_BOT_SETTING/SET",
+  payload: payload,
+});
+
+const error_bot_setting_clear = () => ({
+  type: "ERROR_BOT_SETTING/CLEAR",
+});
+
+const errorBotSetting = (state = initialErrorBotSetting, action) => {
+  switch (action.type) {
+    case "ERROR_BOT_SETTING/SET":
+      state = action.payload;
+      break;
+    case "ERROR_BOT_SETTING/CLEAR":
+      state = initialErrorBotSetting;
+      break;
+    default:
+      state = state;
+      break;
+  }
+  return state;
+};
+
 const rootReducer = combineReducers({
   auth,
   botSetting,
   balance,
   botTransaction,
+  errorBotSetting,
 });
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
@@ -187,5 +224,8 @@ export {
   bot_setting_init,
   bot_transaction_set,
   auth_setbot,
-  bot_setting_clear
+  bot_setting_clear,
+  error_bot_setting_set,
+  error_bot_setting_clear,
+  bot_clear,
 };

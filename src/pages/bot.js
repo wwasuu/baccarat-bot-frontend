@@ -9,6 +9,7 @@ import { socket } from "./socket";
 import { useSelector, useDispatch } from "react-redux";
 import { Menu, Icon, Table } from "semantic-ui-react";
 import { bot_transaction_set, balance_set, bot_setting_clear } from "../store";
+import { unformat } from "numeral";
 
 function compare(a, b) {
   if (a.id < b.id) {
@@ -28,7 +29,7 @@ const Setting = () => {
   var [tableData, setTableData] = useState([]);
   var [graphData, setGraph] = useState([
     {
-      name: "series 1",
+      name: "แพ้",
       data: [],
     },
   ]);
@@ -48,7 +49,7 @@ const Setting = () => {
       grid: {
         show: false,
       },
-      colors: ["#00b5ad"],
+      colors: ["#de1245", "#00b5ad"],
       xaxis: {
         labels: {
           show: false,
@@ -74,6 +75,9 @@ const Setting = () => {
           show: false,
         },
       },
+      fill: {
+        type: 'gradient'
+      },
       legend: {
         show: false,
       },
@@ -85,7 +89,12 @@ const Setting = () => {
         },
       },
       tooltip: {
-        enabled: false,
+        enabled: true,
+        custom: function({series, seriesIndex, dataPointIndex, w}) {
+          return '<div class="graph_tooltip">' +
+            '<span>' + series[seriesIndex][dataPointIndex] + '</span>' +
+            '</div>'
+        }
       },
     },
   };
@@ -173,13 +182,28 @@ const Setting = () => {
       let newData = data.sort(compare);
       let graph = [
         {
-          name: "series 1",
+          name: "แพ้",
+          data: [],
+        },
+        {
+          name: "ชนะ",
           data: [],
         },
       ];
       let offset = 0 - newData[0].point
       newData.forEach((element) => {
-        graph[0].data.push(element.point + offset);
+        let newPoint = element.point + offset;
+        if(newPoint === 0){
+          graph[1].data.push(newPoint);
+          graph[0].data.push(newPoint);
+        }else if(newPoint < 0){
+          graph[1].data.push(0);
+          graph[0].data.push(newPoint);
+        }else if(newPoint > 0){
+          graph[1].data.push(newPoint);
+          graph[0].data.push(0);
+        }
+        
         
       });
       setGraph(graph);

@@ -1,5 +1,5 @@
 import cn from "classnames";
-import React from "react";
+import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   Button,
@@ -12,12 +12,54 @@ import {
 } from "semantic-ui-react";
 import Navbar from "../components/Navbar";
 import BotInformation from "../components/BotInformation";
-import { bot_setting_set } from "../store";
+import { bot_setting_set, error_bot_setting_clear } from "../store";
 
 const Setting = () => {
   const botSetting = useSelector((state) => state.botSetting);
   const balance = useSelector((state) => state.balance);
+  const errorBotSetting = useSelector((state) => state.errorBotSetting);
+  const [profit, setProfit] = useState("");
+  const [profitPercent, setProfitPercent] = useState("");
+  const [loss, setLoss] = useState("");
+  const [lossPercent, setLossPercent] = useState("");
   const dispatch = useDispatch();
+
+  function handleChangeProfit(e) {
+    dispatch(error_bot_setting_clear());
+    const value = e.target.value;
+    setProfit(value);
+    const percent = +Math.round((100 * value) / balance);
+    dispatch(bot_setting_set({ ...botSetting, profit_percent: percent }));
+    setProfitPercent(percent);
+  }
+
+  function handleChangeProfitPercent(e) {
+    dispatch(error_bot_setting_clear());
+    const value = +e.target.value;
+    setProfitPercent(value);
+    const integer = Math.round((balance * value) / 100);
+    dispatch(bot_setting_set({ ...botSetting, profit_percent: value }));
+    setProfit(integer);
+  }
+
+  function handleChangeLoss(e) {
+    dispatch(error_bot_setting_clear());
+    const value = +e.target.value;
+    setLoss(value);
+    const percent = Math.round((100 * value) / balance);
+    dispatch(bot_setting_set({ ...botSetting, loss_percent: percent }));
+    setLossPercent(percent);
+  }
+
+  function handleChangeLossPercent(e) {
+    dispatch(error_bot_setting_clear());
+    const value = +e.target.value;
+    setLossPercent(value);
+    const integer = Math.round((balance * value) / 100);
+    dispatch(bot_setting_set({ ...botSetting, loss_percent: value }));
+    setLoss(integer);
+  }
+
   return (
     <>
       <Navbar />
@@ -136,21 +178,6 @@ const Setting = () => {
                 />
               </Card.Group>
             </Container>
-            {/* <Container text fluid>
-              <Header as="h3" style={{ color: "#fff" }}>
-                ตั้งค่าชิพ
-              </Header>
-              <p>
-                การตั้งค่าชิพคือการกำหนดเงินเดิมพันต่ำสุด
-                ถึงสูงสุดที่สามารถลงเงินได้
-              </p>
-
-              <Form.Input
-                icon="dollar sign"
-                iconPosition="left"
-                placeholder="50 - 2500"
-              />
-            </Container> */}
             <Container text fluid>
               <Header as="h3" style={{ color: "#fff" }}>
                 เลือกชิพเริ่มต้น
@@ -159,8 +186,6 @@ const Setting = () => {
                 ข้อแนะนำการเลือกชิพนั้นไม่ควรกำหนดชิพเริ่มต้นเกิน 1% ของเงินทุน
                 เช่นทุน 5,000 บาท ควรเริ่มเล่น 50 บาทเป็นต้น
               </p>
-
-              {/* <Form.Input icon="redo" iconPosition="left" placeholder="50" /> */}
               <div style={{ marginTop: 12 }}>
                 <Button
                   color={botSetting.init_bet === 50 ? "teal" : ""}
@@ -253,36 +278,119 @@ const Setting = () => {
                 ข้อแนะนำการเลือกกำไรเป้าเริ่มต้นที่ 5-10% และเก็บเป็นรอบ
                 หรือวันละครั้งเพื่อลงทุนระยะยาว
               </p>
-              <Form.Select
-                value={botSetting.profit_percent}
-                onChange={(e, v) =>
-                  dispatch(
-                    bot_setting_set({ ...botSetting, profit_percent: v.value })
-                  )
-                }
-                options={[
-                  { key: "1", value: 1, text: "1%" },
-                  { key: "2", value: 2, text: "2%" },
-                  { key: "3", value: 3, text: "3%" },
-                  { key: "4", value: 4, text: "4%" },
-                  { key: "5", value: 5, text: "5%" },
-                  { key: "10", value: 10, text: "10%" },
-                  { key: "20", value: 20, text: "20%" },
-                  { key: "30", value: 30, text: "30%" },
-                  { key: "40", value: 40, text: "40%" },
-                  { key: "50", value: 50, text: "50%" },
-                  { key: "75", value: 75, text: "75%" },
-                  { key: "100", value: 100, text: "100%" },
-                ]}
-              />
+
+              <div class="ui segment divider-container">
+                <div class="ui two column very relaxed grid">
+                  <div class="column">
+                    <Form.Input
+                      error={
+                        errorBotSetting.indexOf("PROFIT") >= 0
+                          ? {
+                              content: "กรุณากำหนดกำไรเป้าหมาย",
+                              pointing: "below",
+                            }
+                          : null
+                      }
+                      type="number"
+                      icon="dollar sign"
+                      iconPosition="left"
+                      value={profit}
+                      onChange={handleChangeProfit}
+                    />
+                  </div>
+                  <div class="column">
+                    <Form.Input
+                      error={
+                        errorBotSetting.indexOf("PROFIT") >= 0
+                          ? {
+                              content: "กรุณากำหนดกำไรเป้าหมาย",
+                              pointing: "below",
+                            }
+                          : null
+                      }
+                      type="number"
+                      icon="percent"
+                      iconPosition="left"
+                      value={botSetting.profit_percent}
+                      // value={profitPercent}
+                      onChange={handleChangeProfitPercent}
+                    />
+                    {/* <Form.Select
+                      value={botSetting.profit_percent}
+                      onChange={(e, v) =>
+                        dispatch(
+                          bot_setting_set({
+                            ...botSetting,
+                            profit_percent: v.value,
+                          })
+                        )
+                      }
+                      options={[
+                        { key: "1", value: 1, text: "1%" },
+                        { key: "2", value: 2, text: "2%" },
+                        { key: "3", value: 3, text: "3%" },
+                        { key: "4", value: 4, text: "4%" },
+                        { key: "5", value: 5, text: "5%" },
+                        { key: "10", value: 10, text: "10%" },
+                        { key: "20", value: 20, text: "20%" },
+                        { key: "30", value: 30, text: "30%" },
+                        { key: "40", value: 40, text: "40%" },
+                        { key: "50", value: 50, text: "50%" },
+                        { key: "75", value: 75, text: "75%" },
+                        { key: "100", value: 100, text: "100%" },
+                      ]}
+                    /> */}
+                  </div>
+                </div>
+                <div class="ui vertical divider">หรือ</div>
+              </div>
             </Container>
             <Container text fluid>
               <Header as="h3" style={{ color: "#fff" }}>
                 กำหนดขาดทุนไม่เกิน
               </Header>
               <p>ข้อแนะนำ แนะนำให้ตั้ง 3 เท่าของกำไรที่เป้าหมาย </p>
-
-              <Form.Select
+              <div class="ui segment divider-container">
+                <div class="ui two column very relaxed grid">
+                  <div class="column">
+                    <Form.Input
+                      error={
+                        errorBotSetting.indexOf("LOSS") >= 0
+                          ? {
+                              content: "กรุณากำหนดขาดทุนไม่เกิน",
+                              pointing: "below",
+                            }
+                          : null
+                      }
+                      type="number"
+                      icon="dollar sign"
+                      iconPosition="left"
+                      onChange={handleChangeLoss}
+                      value={loss}
+                    />
+                  </div>
+                  <div class="column">
+                    <Form.Input
+                      error={
+                        errorBotSetting.indexOf("LOSS") >= 0
+                          ? {
+                              content: "กรุณากำหนดขาดทุนไม่เกิน",
+                              pointing: "below",
+                            }
+                          : null
+                      }
+                      type="number"
+                      icon="percent"
+                      iconPosition="left"
+                      onChange={handleChangeLossPercent}
+                      value={botSetting.loss_percent}
+                      // value={lossPercent}
+                    />
+                  </div>
+                </div>
+                <div class="ui vertical divider">หรือ</div>
+              </div>
+              {/* <Form.Select
                 value={botSetting.loss_percent}
                 onChange={(e, v) => {
                   return dispatch(
@@ -303,7 +411,7 @@ const Setting = () => {
                   { key: "75", value: 75, text: "75%" },
                   { key: "100", value: 100, text: "100%" },
                 ]}
-              />
+              /> */}
             </Container>
           </Grid.Column>
         </Grid.Row>
