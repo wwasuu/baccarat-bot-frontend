@@ -44,17 +44,17 @@ export default function BotGrapj() {
   var [bankerGraph, setBankerGraph] = useState({
     multi: [
       {
-        name: "BANKER",
+        name: "BANKER Only",
         data: [],
       },
     ],
     single: [
       {
-        name: "BANKER",
+        name: "BANKER Only",
         data: [],
       },
       {
-        name: "BANKER",
+        name: "BANKER Only",
         data: [],
       },
     ],
@@ -62,17 +62,17 @@ export default function BotGrapj() {
   var [playerGraph, setPlayerGraph] = useState({
     multi: [
       {
-        name: "PLAYER",
+        name: "PLAYER Only",
         data: [],
       },
     ],
     single: [
       {
-        name: "PLAYER",
+        name: "PLAYER Only",
         data: [],
       },
       {
-        name: "PLAYER",
+        name: "PLAYER Only",
         data: [],
       },
     ],
@@ -101,7 +101,7 @@ export default function BotGrapj() {
   }
 
   function getOption() {
-    if (betSide.length == 1) {
+    if (betSide.length === 1) {
       return {
         chart: {
           toolbar: false,
@@ -155,14 +155,9 @@ export default function BotGrapj() {
             color: "#fff",
           },
         },
-        // tooltip: {
-        //     enabled: true,
-        //     custom: function ({ series, seriesIndex, dataPointIndex, w }) {
-        //         return '<div class="arrow_box">' +
-        //             '<span>' + series[seriesIndex][dataPointIndex] + '</span>' +
-        //             '</div>'
-        //     }
-        // },
+        tooltip: {
+          enabled: false,
+        },
       };
     } else {
       return {
@@ -222,21 +217,16 @@ export default function BotGrapj() {
             color: "#fff",
           },
         },
-        // tooltip: {
-        //     enabled: true,
-        //     custom: function ({ series, seriesIndex, dataPointIndex, w }) {
-        //         return '<div class="arrow_box">' +
-        //             '<span>' + series[seriesIndex][dataPointIndex] + '</span>' +
-        //             '</div>'
-        //     }
-        // },
+        tooltip: {
+          enabled: false,
+        },
       };
     }
   }
 
   function showGraph() {
-    if (betSide.length == 1) {
-      if (betSide[0] == "DEFAULT") {
+    if (betSide.length === 1) {
+      if (betSide[0] === "DEFAULT") {
         return [...defaultGraph.single];
       } else if (betSide[0] == "BANKER") {
         return [...bankerGraph.single];
@@ -258,7 +248,7 @@ export default function BotGrapj() {
         g.push(...bankerGraph.multi);
       } else {
         g.push({
-          name: "BANKER",
+          name: "BANKER Only",
           data: [],
         });
       }
@@ -267,7 +257,7 @@ export default function BotGrapj() {
         g.push(...playerGraph.multi);
       } else {
         g.push({
-          name: "PLAYER",
+          name: "PLAYER Only",
           data: [],
         });
       }
@@ -329,18 +319,18 @@ export default function BotGrapj() {
       newData.shift();
       let multiGraph = [
         {
-          name: "BANKER",
+          name: "BANKER Only",
           data: [],
         },
       ];
 
       let singleGraph = [
         {
-          name: "POSITIVE BANKER",
+          name: "POSITIVE BANKER Only",
           data: [],
         },
         {
-          name: "NEGATIVE BANKER",
+          name: "NEGATIVE BANKER Only",
           data: [],
         },
       ];
@@ -385,18 +375,18 @@ export default function BotGrapj() {
       newData.shift();
       let multiGraph = [
         {
-          name: "PLAYER",
+          name: "PLAYER Only",
           data: [],
         },
       ];
 
       let singleGraph = [
         {
-          name: "POSITIVE PLAYER",
+          name: "POSITIVE PLAYER Only",
           data: [],
         },
         {
-          name: "NEGATIVE PLAYER",
+          name: "NEGATIVE PLAYER Only",
           data: [],
         },
       ];
@@ -446,6 +436,7 @@ export default function BotGrapj() {
   return (
     <>
       <div className="switch-group">
+      <label style={{color: "white", marginRight: '10px'}}>เลือกเพื่อดูกราฟ:</label>
         <div
           className="ui toggle checkbox"
           onClick={() => toggleBetSide("DEFAULT")}
@@ -455,11 +446,11 @@ export default function BotGrapj() {
         </div>
         <div className="ui toggle checkbox" onClick={() => toggleBetSide("PLAYER")}>
           <input type="checkbox" checked={betSide.indexOf("PLAYER") > -1} />
-          <label>Player</label>
+          <label>Player Only</label>
         </div>
         <div className="ui toggle checkbox" onClick={() => toggleBetSide("BANKER")}>
           <input type="checkbox" checked={betSide.indexOf("BANKER") > -1} />
-          <label>Banker</label>
+          <label>Banker Only</label>
         </div>
       </div>
 
