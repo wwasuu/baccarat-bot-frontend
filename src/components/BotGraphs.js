@@ -447,17 +447,17 @@ export default function BotGrapj() {
     <>
       <div className="switch-group">
         <div
-          class="ui toggle checkbox"
+          className="ui toggle checkbox"
           onClick={() => toggleBetSide("DEFAULT")}
         >
           <input type="checkbox" checked={betSide.indexOf("DEFAULT") > -1} />
           <label>Player/Banker</label>
         </div>
-        <div class="ui toggle checkbox" onClick={() => toggleBetSide("PLAYER")}>
+        <div className="ui toggle checkbox" onClick={() => toggleBetSide("PLAYER")}>
           <input type="checkbox" checked={betSide.indexOf("PLAYER") > -1} />
           <label>Player</label>
         </div>
-        <div class="ui toggle checkbox" onClick={() => toggleBetSide("BANKER")}>
+        <div className="ui toggle checkbox" onClick={() => toggleBetSide("BANKER")}>
           <input type="checkbox" checked={betSide.indexOf("BANKER") > -1} />
           <label>Banker</label>
         </div>

@@ -45,10 +45,10 @@ const BotInformation = () => {
   const botSetting = useSelector((state) => state.botSetting);
   var botTransaction = useSelector((state) => state.botTransaction);
   const dispatch = useDispatch();
-  const [botState, setBotState] = useState("SETTING");
+  const errorBotSetting = useSelector((state) => state.errorBotSetting);
   const [isShownConfirmPause, setIsShownConfirmPause] = useState(false);
   const [isShownConfirmStop, setIsShownConfirmStop] = useState(false);
-  const [betSide, setBetSide] = useState(["PLAYER/BANKER", "PLAYER", "BANKER"]);
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     getUserBotTransaction();
@@ -145,10 +145,17 @@ const BotInformation = () => {
       if (!botSetting.loss_percent) {
         tmpError.push("LOSS");
       }
+      if (errorBotSetting.includes("LOSS_OVER_LIMIT")) {
+        tmpError.push("LOSS_OVER_LIMIT");
+      }
       dispatch(error_bot_setting_set(tmpError));
       return;
     }
+    if (errorBotSetting.length) {
+      return
+    }
     try {
+      setIsLoading(true)
       const {
         data: { data, success },
       } = await axios.post("https://api.ibot.bet/bot", {
@@ -167,12 +174,14 @@ const BotInformation = () => {
     } catch (error) {
       console.log("Error while call create()", error);
     }
+    setIsLoading(false)
   }
 
   async function start() {
     try {
       const bot_id = botSetting.id;
       if (bot_id) {
+        setIsLoading(true)
         const {
           data: { success },
         } = await axios.post("https://api.ibot.bet/start", {
@@ -190,13 +199,15 @@ const BotInformation = () => {
     } catch (error) {
       console.log("Error while call start()", error);
     }
+    setIsLoading(false)
   }
 
   async function pause() {
     try {
+      setIsLoading(true)
       const {
         data: { success },
-      } = axios.post("https://api.ibot.bet/pause", {
+      } = await axios.post("https://api.ibot.bet/pause", {
         username: auth.username,
       });
       if (success) {
@@ -210,11 +221,13 @@ const BotInformation = () => {
     } catch (error) {
       console.log("Error while call pause()", error);
     }
+    setIsLoading(false)
   }
 
   async function stop() {
     try {
-      const res = axios.post("https://api.ibot.bet/stop", {
+      setIsLoading(true)
+      const res = await axios.post("https://api.ibot.bet/stop", {
         username: auth.username,
       });
       dispatch(bot_setting_clear());
@@ -224,6 +237,7 @@ const BotInformation = () => {
     } catch (error) {
       console.log("Error while call stop()", error);
     }
+    setIsLoading(false)
   }
 
   function calculateProfit() {
@@ -349,19 +363,19 @@ const BotInformation = () => {
         </Header>
         <div style={{ marginBottom: 24 }}>
           {!botSetting.id && (
-            <Button color="blue" icon labelPosition="left" onClick={create}>
+            <Button color="blue" icon labelPosition="left" onClick={create} loading={isLoading}>
               สร้าง
               <Icon name="save" />
             </Button>
           )}
           {botSetting.status === 2 && (
-            <Button color="teal" icon labelPosition="left" onClick={start}>
+            <Button color="teal" icon labelPosition="left" onClick={start} loading={isLoading}>
               เริ่ม
               <Icon name="play" />
             </Button>
           )}
           {botSetting.status === 1 && (
-            <Button color="yellow" icon labelPosition="left" onClick={pause}>
+            <Button color="yellow" icon labelPosition="left" onClick={pause} loading={isLoading}>
               <Icon name="pause" />
               หยุด
             </Button>
@@ -372,6 +386,7 @@ const BotInformation = () => {
               icon
               labelPosition="left"
               onClick={setIsShownConfirmStop}
+              loading={isLoading}
             >
               <Icon name="close" />
               ปิด

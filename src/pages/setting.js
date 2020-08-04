@@ -1,5 +1,5 @@
 import cn from "classnames";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   Button,
@@ -9,55 +9,82 @@ import {
   Grid,
   Header,
   Select,
+  Input,
 } from "semantic-ui-react";
 import Navbar from "../components/Navbar";
 import BotInformation from "../components/BotInformation";
-import { bot_setting_set, error_bot_setting_clear } from "../store";
+import {
+  bot_setting_set,
+  error_bot_setting_clear,
+  error_bot_setting_set,
+} from "../store";
 
 const Setting = () => {
   const botSetting = useSelector((state) => state.botSetting);
   const balance = useSelector((state) => state.balance);
   const errorBotSetting = useSelector((state) => state.errorBotSetting);
   const [profit, setProfit] = useState("");
-  const [profitPercent, setProfitPercent] = useState("");
   const [loss, setLoss] = useState("");
-  const [lossPercent, setLossPercent] = useState("");
   const dispatch = useDispatch();
+  const inputProfit = useRef(null);
+  const inputLoss = useRef(null);
 
   function handleChangeProfit(e) {
     dispatch(error_bot_setting_clear());
     const value = e.target.value;
     setProfit(value);
     const percent = +Math.round((100 * value) / balance);
-    dispatch(bot_setting_set({ ...botSetting, profit_percent: percent }));
-    setProfitPercent(percent);
+    dispatch(bot_setting_set({ ...botSetting, profit_percent: percent ? percent : "" }));
   }
 
   function handleChangeProfitPercent(e) {
     dispatch(error_bot_setting_clear());
     const value = +e.target.value;
-    setProfitPercent(value);
-    const integer = Math.round((balance * value) / 100);
-    dispatch(bot_setting_set({ ...botSetting, profit_percent: value }));
-    setProfit(integer);
+    const integer = Math.floor((balance * value) / 100);
+
+    dispatch(
+      bot_setting_set({ ...botSetting, profit_percent: value ? value : "" })
+    );
+    setProfit(integer ? integer : "");
   }
 
   function handleChangeLoss(e) {
     dispatch(error_bot_setting_clear());
     const value = +e.target.value;
-    setLoss(value);
     const percent = Math.round((100 * value) / balance);
-    dispatch(bot_setting_set({ ...botSetting, loss_percent: percent }));
-    setLossPercent(percent);
+    if (percent > 100) {
+      dispatch(error_bot_setting_set("LOSS_OVER_LIMIT"));
+    }
+    setLoss(value);
+    dispatch(bot_setting_set({ ...botSetting, loss_percent: percent ? percent : "" }));
   }
 
   function handleChangeLossPercent(e) {
     dispatch(error_bot_setting_clear());
     const value = +e.target.value;
-    setLossPercent(value);
-    const integer = Math.round((balance * value) / 100);
-    dispatch(bot_setting_set({ ...botSetting, loss_percent: value }));
-    setLoss(integer);
+    const integer = Math.floor((balance * value) / 100);
+    if (value > 100) {
+      dispatch(error_bot_setting_set("LOSS_OVER_LIMIT"));
+      
+    }
+    dispatch(
+      bot_setting_set({ ...botSetting, loss_percent: value ? value : "" })
+    );
+    setLoss(integer ? integer : "");
+  }
+
+  function renderErorrLoss() {
+    let content = "";
+    if (errorBotSetting.includes("LOSS")) {
+      content = "กรุณากำหนดขาดทุนไม่เกิน";
+    }
+    if (errorBotSetting.includes("LOSS_OVER_LIMIT")) {
+      content = "การกำหนดขาดทุนไม่เกิน ไม่สามารถเกินเงินในบัญชี";
+    }
+    return {
+      content,
+      pointing: "below",
+    };
   }
 
   return (
@@ -283,8 +310,9 @@ const Setting = () => {
                 <div class="ui two column very relaxed grid">
                   <div class="column">
                     <Form.Input
+                      ref={inputProfit}
                       error={
-                        errorBotSetting.indexOf("PROFIT") >= 0
+                        errorBotSetting.includes("PROFIT")
                           ? {
                               content: "กรุณากำหนดกำไรเป้าหมาย",
                               pointing: "below",
@@ -301,7 +329,7 @@ const Setting = () => {
                   <div class="column">
                     <Form.Input
                       error={
-                        errorBotSetting.indexOf("PROFIT") >= 0
+                        errorBotSetting.includes("PROFIT")
                           ? {
                               content: "กรุณากำหนดกำไรเป้าหมาย",
                               pointing: "below",
@@ -352,14 +380,13 @@ const Setting = () => {
               <p>ข้อแนะนำ แนะนำให้ตั้ง 3 เท่าของกำไรที่เป้าหมาย </p>
               <div class="ui segment divider-container">
                 <div class="ui two column very relaxed grid">
+                  <input type="hidden" ref={inputLoss} />
                   <div class="column">
                     <Form.Input
                       error={
-                        errorBotSetting.indexOf("LOSS") >= 0
-                          ? {
-                              content: "กรุณากำหนดขาดทุนไม่เกิน",
-                              pointing: "below",
-                            }
+                        errorBotSetting.includes("LOSS") ||
+                        errorBotSetting.includes("LOSS_OVER_LIMIT")
+                          ? renderErorrLoss()
                           : null
                       }
                       type="number"
@@ -367,16 +394,15 @@ const Setting = () => {
                       iconPosition="left"
                       onChange={handleChangeLoss}
                       value={loss}
+                      id='form-input-first-name'
                     />
                   </div>
                   <div class="column">
                     <Form.Input
                       error={
-                        errorBotSetting.indexOf("LOSS") >= 0
-                          ? {
-                              content: "กรุณากำหนดขาดทุนไม่เกิน",
-                              pointing: "below",
-                            }
+                        errorBotSetting.includes("LOSS") ||
+                        errorBotSetting.includes("LOSS_OVER_LIMIT")
+                          ? renderErorrLoss()
                           : null
                       }
                       type="number"
