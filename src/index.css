@@ -154,7 +154,7 @@ code {
 
 .progress-info {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     margin-bottom: 8px;
     color: #fff;
 }
@@ -283,4 +283,26 @@ input[type=number] {
 background: #fff!important;
 border: 1px solid #e0b4b4!important;
 color: #9f3a38!important;
+}
+
+.progress-container {
+  display: flex;
+}
+
+.progress-item  {
+  flex: 1;
+}
+
+.progress-item--negative {
+  transform: scaleX(-1);
+}
+
+.progress-item > .ui.progress, .progress-item > .ui.progress > .bar {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+
+.ui.progress .bar, .ui.active.progress .bar {
+  min-width: 0;
 }

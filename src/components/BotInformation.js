@@ -48,7 +48,7 @@ const BotInformation = () => {
   const errorBotSetting = useSelector((state) => state.errorBotSetting);
   const [isShownConfirmPause, setIsShownConfirmPause] = useState(false);
   const [isShownConfirmStop, setIsShownConfirmStop] = useState(false);
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     getUserBotTransaction();
@@ -152,10 +152,10 @@ const BotInformation = () => {
       return;
     }
     if (errorBotSetting.length) {
-      return
+      return;
     }
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const {
         data: { data, success },
       } = await axios.post("https://api.ibot.bet/bot", {
@@ -174,14 +174,14 @@ const BotInformation = () => {
     } catch (error) {
       console.log("Error while call create()", error);
     }
-    setIsLoading(false)
+    setIsLoading(false);
   }
 
   async function start() {
     try {
       const bot_id = botSetting.id;
       if (bot_id) {
-        setIsLoading(true)
+        setIsLoading(true);
         const {
           data: { success },
         } = await axios.post("https://api.ibot.bet/start", {
@@ -199,12 +199,12 @@ const BotInformation = () => {
     } catch (error) {
       console.log("Error while call start()", error);
     }
-    setIsLoading(false)
+    setIsLoading(false);
   }
 
   async function pause() {
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const {
         data: { success },
       } = await axios.post("https://api.ibot.bet/pause", {
@@ -221,12 +221,12 @@ const BotInformation = () => {
     } catch (error) {
       console.log("Error while call pause()", error);
     }
-    setIsLoading(false)
+    setIsLoading(false);
   }
 
   async function stop() {
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.post("https://api.ibot.bet/stop", {
         username: auth.username,
       });
@@ -237,7 +237,7 @@ const BotInformation = () => {
     } catch (error) {
       console.log("Error while call stop()", error);
     }
-    setIsLoading(false)
+    setIsLoading(false);
   }
 
   function calculateProfit() {
@@ -262,10 +262,17 @@ const BotInformation = () => {
     );
   }
 
-  function calculateProgressPercent() {
+  function calculateProfitProgressPercent() {
     if (balance < botSetting.init_wallet) return 0;
     const target = botSetting.profit_threshold - botSetting.init_wallet;
     const current = balance - botSetting.init_wallet;
+    return Math.round((100 * current) / target);
+  }
+
+  function calculateLossProgressPercent() {
+    if (balance > botSetting.init_wallet) return 0;
+    const target =  botSetting.init_wallet - botSetting.loss_threshold;
+    const current = botSetting.init_wallet - balance;
     return Math.round((100 * current) / target);
   }
 
@@ -363,19 +370,37 @@ const BotInformation = () => {
         </Header>
         <div style={{ marginBottom: 24 }}>
           {!botSetting.id && (
-            <Button color="blue" icon labelPosition="left" onClick={create} loading={isLoading}>
+            <Button
+              color="blue"
+              icon
+              labelPosition="left"
+              onClick={create}
+              loading={isLoading}
+            >
               สร้าง
               <Icon name="save" />
             </Button>
           )}
           {botSetting.status === 2 && (
-            <Button color="teal" icon labelPosition="left" onClick={start} loading={isLoading}>
+            <Button
+              color="teal"
+              icon
+              labelPosition="left"
+              onClick={start}
+              loading={isLoading}
+            >
               เริ่ม
               <Icon name="play" />
             </Button>
           )}
           {botSetting.status === 1 && (
-            <Button color="yellow" icon labelPosition="left" onClick={pause} loading={isLoading}>
+            <Button
+              color="yellow"
+              icon
+              labelPosition="left"
+              onClick={pause}
+              loading={isLoading}
+            >
               <Icon name="pause" />
               หยุด
             </Button>
@@ -395,24 +420,43 @@ const BotInformation = () => {
         </div>
         <div className="progress-info">
           {botSetting.status === 1 || botSetting.status === 2 ? (
+            <>
+            <div>
+              {calculateLoss()}/{calculateLossTarget()} ({calculateLossProgressPercent()}%)
+            </div>
             <div>
               {calculateProfit()}/{calculateProfitTarget()} (
-              {calculateProgressPercent()}%)
+              {calculateProfitProgressPercent()}%)
             </div>
+            </>
           ) : (
+            <>
             <div>0/0 (0%)</div>
+            <div>0/0 (0%)</div>
+            </>
           )}
         </div>
         {botSetting.status === 1 || botSetting.status === 2 ? (
-          <Progress
-            percent={calculateProgressPercent()}
-            active
-            progress
-            color="teal"
-            size="small"
-          />
+          <div className="progress-container">
+            <div className="progress-item progress-item--negative">
+              <Progress
+                percent={calculateLossProgressPercent()}
+                active
+                color="red"
+                size="small"
+              />
+            </div>
+            <div className="progress-item progress-item--positive">
+              <Progress
+                percent={calculateProfitProgressPercent()}
+                active
+                color="teal"
+                size="small"
+              />
+            </div>
+          </div>
         ) : (
-          <Progress percent={0} active progress color="teal" size="small" />
+          <Progress percent={0} active color="teal" size="small" />
         )}
         {!botSetting.id && <BotGraph />}
         {(botSetting.status === 1 || botSetting.status === 2) && (
