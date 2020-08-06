@@ -228,9 +228,9 @@ export default function BotGrapj() {
     if (betSide.length === 1) {
       if (betSide[0] === "DEFAULT") {
         return [...defaultGraph.single];
-      } else if (betSide[0] == "BANKER") {
+      } else if (betSide[0] === "BANKER") {
         return [...bankerGraph.single];
-      } else if (betSide[0] == "PLAYER") {
+      } else if (betSide[0] === "PLAYER") {
         return [...playerGraph.single];
       }
     } else {
@@ -337,18 +337,18 @@ export default function BotGrapj() {
       let init = 0;
       multiGraph[0].data.push(0);
       newData.forEach((element) => {
-        if (element.win_result == "WIN") {
+        if (element.win_result === "WIN") {
           init++;
-        } else if (element.win_result == "LOSE") {
+        } else if (element.win_result === "LOSE") {
           init--;
         }
         multiGraph[0].data.push(init);
       });
       init = 0;
       newData.forEach((element) => {
-        if (element.win_result == "WIN") {
+        if (element.win_result === "WIN") {
           init++;
-        } else if (element.win_result == "LOSE") {
+        } else if (element.win_result === "LOSE") {
           init--;
         }
 
@@ -393,18 +393,18 @@ export default function BotGrapj() {
       let init = 0;
       multiGraph[0].data.push(0);
       newData.forEach((element) => {
-        if (element.win_result == "WIN") {
+        if (element.win_result === "WIN") {
           init++;
-        } else if (element.win_result == "LOSE") {
+        } else if (element.win_result === "LOSE") {
           init--;
         }
         multiGraph[0].data.push(init);
       });
       init = 0;
       newData.forEach((element) => {
-        if (element.win_result == "WIN") {
+        if (element.win_result === "WIN") {
           init++;
-        } else if (element.win_result == "LOSE") {
+        } else if (element.win_result === "LOSE") {
           init--;
         }
 
