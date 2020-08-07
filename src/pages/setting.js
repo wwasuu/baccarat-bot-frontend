@@ -31,46 +31,66 @@ const Setting = () => {
 
   function handleChangeProfit(e) {
     dispatch(error_bot_setting_clear());
-    const value = e.target.value;
+    const value = +e.target.value;
+    const percent = +((100 * value) / balance).toFixed(2);
     setProfit(value);
-    const percent = +Math.round((100 * value) / balance);
-    dispatch(bot_setting_set({ ...botSetting, profit_percent: percent ? percent : "" }));
+    dispatch(
+      bot_setting_set({
+        ...botSetting,
+        profit_percent: percent,
+        profit_threshold: botSetting.init_wallet + value,
+      })
+    );
   }
 
   function handleChangeProfitPercent(e) {
     dispatch(error_bot_setting_clear());
-    const value = +e.target.value;
+    const value = e.target.value;
     const integer = Math.floor((balance * value) / 100);
 
     dispatch(
-      bot_setting_set({ ...botSetting, profit_percent: value ? value : "" })
+      bot_setting_set({
+        ...botSetting,
+        profit_percent: value,
+        profit_threshold: botSetting.init_wallet + integer,
+      })
     );
-    setProfit(integer ? integer : "");
+    setProfit(integer);
   }
 
   function handleChangeLoss(e) {
     dispatch(error_bot_setting_clear());
     const value = +e.target.value;
-    const percent = Math.round((100 * value) / balance);
+    const percent = +((100 * value) / balance).toFixed(2);
     if (percent > 100) {
       dispatch(error_bot_setting_set("LOSS_OVER_LIMIT"));
     }
     setLoss(value);
-    dispatch(bot_setting_set({ ...botSetting, loss_percent: percent ? percent : "" }));
+    dispatch(
+      bot_setting_set({
+        ...botSetting,
+        loss_percent: percent,
+        loss_threshold: botSetting.init_wallet - value,
+      })
+    );
   }
 
   function handleChangeLossPercent(e) {
     dispatch(error_bot_setting_clear());
-    const value = +e.target.value;
+    const value = e.target.value;
     const integer = Math.floor((balance * value) / 100);
     if (value > 100) {
       dispatch(error_bot_setting_set("LOSS_OVER_LIMIT"));
-      
     }
+    console.log(value);
     dispatch(
-      bot_setting_set({ ...botSetting, loss_percent: value ? value : "" })
+      bot_setting_set({
+        ...botSetting,
+        loss_percent: value,
+        loss_threshold: botSetting.init_wallet - integer,
+      })
     );
-    setLoss(integer ? integer : "");
+    setLoss(integer);
   }
 
   function renderErorrLoss() {
@@ -306,9 +326,9 @@ const Setting = () => {
                 หรือวันละครั้งเพื่อลงทุนระยะยาว
               </p>
 
-              <div class="ui segment divider-container">
-                <div class="ui two column very relaxed grid">
-                  <div class="column">
+              <div className="ui segment divider-container">
+                <div className="ui two column very relaxed grid">
+                  <div className="column">
                     <Form.Input
                       ref={inputProfit}
                       error={
@@ -322,11 +342,11 @@ const Setting = () => {
                       type="number"
                       icon="dollar sign"
                       iconPosition="left"
-                      value={profit}
+                      value={profit == 0 ? "" : profit}
                       onChange={handleChangeProfit}
                     />
                   </div>
-                  <div class="column">
+                  <div className="column">
                     <Form.Input
                       error={
                         errorBotSetting.includes("PROFIT")
@@ -339,38 +359,16 @@ const Setting = () => {
                       type="number"
                       icon="percent"
                       iconPosition="left"
-                      value={botSetting.profit_percent}
-                      // value={profitPercent}
+                      value={
+                        botSetting.profit_percent == 0
+                          ? ""
+                          : botSetting.profit_percent
+                      }
                       onChange={handleChangeProfitPercent}
                     />
-                    {/* <Form.Select
-                      value={botSetting.profit_percent}
-                      onChange={(e, v) =>
-                        dispatch(
-                          bot_setting_set({
-                            ...botSetting,
-                            profit_percent: v.value,
-                          })
-                        )
-                      }
-                      options={[
-                        { key: "1", value: 1, text: "1%" },
-                        { key: "2", value: 2, text: "2%" },
-                        { key: "3", value: 3, text: "3%" },
-                        { key: "4", value: 4, text: "4%" },
-                        { key: "5", value: 5, text: "5%" },
-                        { key: "10", value: 10, text: "10%" },
-                        { key: "20", value: 20, text: "20%" },
-                        { key: "30", value: 30, text: "30%" },
-                        { key: "40", value: 40, text: "40%" },
-                        { key: "50", value: 50, text: "50%" },
-                        { key: "75", value: 75, text: "75%" },
-                        { key: "100", value: 100, text: "100%" },
-                      ]}
-                    /> */}
                   </div>
                 </div>
-                <div class="ui vertical divider">หรือ</div>
+                <div className="ui vertical divider">หรือ</div>
               </div>
             </Container>
             <Container text fluid>
@@ -378,10 +376,10 @@ const Setting = () => {
                 กำหนดขาดทุนไม่เกิน
               </Header>
               <p>ข้อแนะนำ แนะนำให้ตั้ง 3 เท่าของกำไรที่เป้าหมาย </p>
-              <div class="ui segment divider-container">
-                <div class="ui two column very relaxed grid">
+              <div className="ui segment divider-container">
+                <div className="ui two column very relaxed grid">
                   <input type="hidden" ref={inputLoss} />
-                  <div class="column">
+                  <div className="column">
                     <Form.Input
                       error={
                         errorBotSetting.includes("LOSS") ||
@@ -393,11 +391,11 @@ const Setting = () => {
                       icon="dollar sign"
                       iconPosition="left"
                       onChange={handleChangeLoss}
-                      value={loss}
-                      id='form-input-first-name'
+                      value={loss == 0 ? "" : loss}
+                      id="form-input-first-name"
                     />
                   </div>
-                  <div class="column">
+                  <div className="column">
                     <Form.Input
                       error={
                         errorBotSetting.includes("LOSS") ||
@@ -409,35 +407,12 @@ const Setting = () => {
                       icon="percent"
                       iconPosition="left"
                       onChange={handleChangeLossPercent}
-                      value={botSetting.loss_percent}
-                      // value={lossPercent}
+                      value={botSetting.loss_percent == 0 ? "" : botSetting.loss_percent}
                     />
                   </div>
                 </div>
-                <div class="ui vertical divider">หรือ</div>
+                <div className="ui vertical divider">หรือ</div>
               </div>
-              {/* <Form.Select
-                value={botSetting.loss_percent}
-                onChange={(e, v) => {
-                  return dispatch(
-                    bot_setting_set({ ...botSetting, loss_percent: v.value })
-                  );
-                }}
-                options={[
-                  { key: "1", value: 1, text: "1%" },
-                  { key: "2", value: 2, text: "2%" },
-                  { key: "3", value: 3, text: "3%" },
-                  { key: "4", value: 4, text: "4%" },
-                  { key: "5", value: 5, text: "5%" },
-                  { key: "10", value: 10, text: "10%" },
-                  { key: "20", value: 20, text: "20%" },
-                  { key: "30", value: 30, text: "30%" },
-                  { key: "40", value: 40, text: "40%" },
-                  { key: "50", value: 50, text: "50%" },
-                  { key: "75", value: 75, text: "75%" },
-                  { key: "100", value: 100, text: "100%" },
-                ]}
-              /> */}
             </Container>
           </Grid.Column>
         </Grid.Row>

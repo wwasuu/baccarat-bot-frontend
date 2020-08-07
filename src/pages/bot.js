@@ -26,7 +26,7 @@ const Setting = () => {
   const dispatch = useDispatch();
   const history = useHistory();
   var [tableData, setTableData] = useState([]);
-  
+
   const [bet, setBet] = useState({});
 
   useEffect(() => {
@@ -40,16 +40,16 @@ const Setting = () => {
     socket.on(room, (data) => {
       console.log(data);
       if (data.action === "bet_success") {
-        setBet({...data.data, win_percent: data.win_percent});
+        setBet({ ...data.data, win_percent: data.win_percent });
       } else if (data.action === "bet_result") {
         dispatch(balance_set(data.wallet));
         if (data.isStop) {
           dispatch(bot_setting_clear());
           setTimeout(() => {
             history.push("/setting");
-          }, 1000)
+          }, 1000);
         } else {
-          setBet({})
+          setBet({});
           getUserTransaction();
           getUserBotTransaction();
         }
@@ -59,7 +59,7 @@ const Setting = () => {
 
   async function getUserTransaction() {
     let id = auth.id;
-    if (!id) return
+    if (!id) return;
     try {
       let url = `https://api.ibot.bet/user_transaction/${id}`;
       const {
@@ -79,14 +79,16 @@ const Setting = () => {
     try {
       const {
         data: { data, success },
-      } = await axios.get(`https://api.ibot.bet/user_bot_transaction/${bot_id}`);
+      } = await axios.get(
+        `https://api.ibot.bet/user_bot_transaction/${bot_id}`
+      );
       let transaction = [];
       let newData = data.sort(compare);
       newData.forEach((element) => {
         transaction.push(element.wallet - element.bot.init_wallet);
       });
-      console.log(transaction)
-    
+      console.log(transaction);
+
       dispatch(
         bot_transaction_set([
           {
@@ -95,7 +97,6 @@ const Setting = () => {
           },
         ])
       );
-      
     } catch (error) {
       console.log("error while call getUserBotTransaction()", error);
     }
@@ -109,7 +110,7 @@ const Setting = () => {
             mobile={16}
             tablet={16}
             computer={8}
-            className="content-container-c"
+            className="content-container-c content-container-c-float"
           >
             <BotInformation />
           </Grid.Column>
@@ -135,26 +136,30 @@ const Setting = () => {
                   <>
                     <Card
                       header={bet.table.title}
-                      description={'เกม ' + bet.current.shoe + "-" + bet.current.round}
+                      description={
+                        "เกม " + bet.current.shoe + "-" + bet.current.round
+                      }
                     />
-                    <Card header={bet.win_percent.toFixed(2) + '%'} description="โอกาสทำกำไร" />
-                    <Card header={bet.current.bot} description={bet.betVal+ ' บาท'} />
+                    <Card
+                      header={bet.win_percent.toFixed(2) + "%"}
+                      description="โอกาสทำกำไร"
+                    />
+                    <Card
+                      header={bet.current.bot}
+                      description={bet.betVal + " บาท"}
+                    />
                   </>
                 ) : (
                   <>
-                    <Card
-                      header={"วิเคราะห์"}
-                      description={"โต๊ะน่าเล่น"}
-                    />
+                    <Card header={"วิเคราะห์"} description={"โต๊ะน่าเล่น"} />
                     <Card header="วิเคราะห์" description="การแทง" />
                     <Card header="วิเคราะห์" description="โอกาสทำกำไร" />
-                   
                   </>
                 )}
               </Card.Group>
             </Container>
-            <Container>
-            <Header as="h2" style={{ color: "#fff" }}>
+            <Container fluid>
+              <Header as="h2" style={{ color: "#fff" }}>
                 ประวัติการเล่น
               </Header>
               <Table celled inverted selectable>
@@ -170,19 +175,15 @@ const Setting = () => {
 
                 <Table.Body>
                   {tableData.map((element) => (
-                      <Table.Row key={element.id}>
-                        <Table.Cell>{element.game_info}</Table.Cell>
-                        <Table.Cell>
-                          {Object.keys(element.bet.data.credit)[0]}
-                        </Table.Cell>
-                        <Table.Cell>
-                          {element.bet_credit_chip_amount}
-                        </Table.Cell>
-                        <Table.Cell>
-                          {element.sum_paid_credit_amount}
-                        </Table.Cell>
-                        <Table.Cell>{element.bet_time}</Table.Cell>
-                      </Table.Row>
+                    <Table.Row key={element.id}>
+                      <Table.Cell>{element.game_info}</Table.Cell>
+                      <Table.Cell>
+                        {Object.keys(element.bet.data.credit)[0]}
+                      </Table.Cell>
+                      <Table.Cell>{element.bet_credit_chip_amount}</Table.Cell>
+                      <Table.Cell>{element.sum_paid_credit_amount}</Table.Cell>
+                      <Table.Cell>{element.bet_time}</Table.Cell>
+                    </Table.Row>
                   ))}
                 </Table.Body>
                 <Table.Footer>

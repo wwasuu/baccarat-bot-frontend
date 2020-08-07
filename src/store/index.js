@@ -115,23 +115,23 @@ const botSetting = (state = initialBotSettingState, action) => {
     case "BOT_SETTING/INIT":
       state = {
         ...action.payload,
-        profit_threshold:
-          action.payload.init_wallet +
-          action.payload.init_wallet * (action.payload.profit_percent / 100),
-        loss_threshold:
-          action.payload.init_wallet -
-          action.payload.init_wallet * (action.payload.loss_percent / 100),
+        // profit_threshold:
+        //   action.payload.init_wallet +
+        //   action.payload.init_wallet * (action.payload.profit_percent / 100),
+        // loss_threshold:
+        //   action.payload.init_wallet -
+        //   action.payload.init_wallet * (action.payload.loss_percent / 100),
       };
       break;
     case "BOT_SETTING/SET":
       state = {
         ...action.payload,
-        profit_threshold:
-          action.payload.init_wallet +
-          action.payload.init_wallet * (action.payload.profit_percent / 100),
-        loss_threshold:
-          action.payload.init_wallet -
-          action.payload.init_wallet * (action.payload.loss_percent / 100),
+        // profit_threshold:
+        //   action.payload.init_wallet +
+        //   action.payload.init_wallet * (action.payload.profit_percent / 100),
+        // loss_threshold:
+        //   action.payload.init_wallet -
+        //   action.payload.init_wallet * (action.payload.loss_percent / 100),
       };
       break;
     case "BOT_SETTING/CLEAR":

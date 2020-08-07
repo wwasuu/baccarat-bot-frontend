@@ -436,7 +436,9 @@ export default function BotGrapj() {
   return (
     <>
       <div className="switch-group">
-      <label style={{color: "white", marginRight: '10px'}}>เลือกเพื่อดูกราฟ:</label>
+        <label style={{ color: "white", marginRight: "10px" }}>
+          เลือกเพื่อดูกราฟ:
+        </label>
         <div
           className="ui toggle checkbox"
           onClick={() => toggleBetSide("DEFAULT")}
@@ -444,26 +446,30 @@ export default function BotGrapj() {
           <input type="checkbox" checked={betSide.indexOf("DEFAULT") > -1} />
           <label>Player/Banker</label>
         </div>
-        <div className="ui toggle checkbox" onClick={() => toggleBetSide("PLAYER")}>
+        <div
+          className="ui toggle checkbox"
+          onClick={() => toggleBetSide("PLAYER")}
+        >
           <input type="checkbox" checked={betSide.indexOf("PLAYER") > -1} />
           <label>Player Only</label>
         </div>
-        <div className="ui toggle checkbox" onClick={() => toggleBetSide("BANKER")}>
+        <div
+          className="ui toggle checkbox"
+          onClick={() => toggleBetSide("BANKER")}
+        >
           <input type="checkbox" checked={betSide.indexOf("BANKER") > -1} />
           <label>Banker Only</label>
         </div>
       </div>
 
-      <Container text fluid>
-        <Card fluid>
-          <Chart
-            type="area"
-            options={getOption()}
-            series={showGraph()}
-            height="240"
-          />
-        </Card>
-      </Container>
+      <Card fluid>
+        <Chart
+          type="area"
+          options={getOption()}
+          series={showGraph()}
+          height="240"
+        />
+      </Card>
     </>
   );
 }

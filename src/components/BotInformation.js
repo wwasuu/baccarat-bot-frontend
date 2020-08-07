@@ -1,6 +1,6 @@
 import axios from "axios";
 import numeral from "numeral";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Chart from "react-apexcharts";
 import CountUp from "react-countup";
 import { useDispatch, useSelector } from "react-redux";
@@ -271,7 +271,7 @@ const BotInformation = () => {
 
   function calculateLossProgressPercent() {
     if (balance > botSetting.init_wallet) return 0;
-    const target =  botSetting.init_wallet - botSetting.loss_threshold;
+    const target = botSetting.init_wallet - botSetting.loss_threshold;
     const current = botSetting.init_wallet - balance;
     return Math.round((100 * current) / target);
   }
@@ -302,6 +302,15 @@ const BotInformation = () => {
       default:
         return "";
     }
+  }
+
+  function renderLabouchere() {
+    if (!botSetting.data) return "";
+    return botSetting.data
+      .replace("[", "")
+      .replace("]", "")
+      .split(",")
+      .join(", ");
   }
 
   const chart = {
@@ -364,100 +373,114 @@ const BotInformation = () => {
   return (
     <>
       <Container text fluid>
-        <p style={{ marginBottom: 0 }}>เครดิต</p>
-        <Header size="huge" style={{ color: "#fff", marginTop: 0 }}>
-          <CountUp end={balance} separator="," decimals={2} />
-        </Header>
-        <div style={{ marginBottom: 24 }}>
-          {!botSetting.id && (
-            <Button
-              color="blue"
-              icon
-              labelPosition="left"
-              onClick={create}
-              loading={isLoading}
-            >
-              สร้าง
-              <Icon name="save" />
-            </Button>
-          )}
-          {botSetting.status === 2 && (
-            <Button
-              color="teal"
-              icon
-              labelPosition="left"
-              onClick={start}
-              loading={isLoading}
-            >
-              เริ่ม
-              <Icon name="play" />
-            </Button>
-          )}
-          {botSetting.status === 1 && (
-            <Button
-              color="yellow"
-              icon
-              labelPosition="left"
-              onClick={pause}
-              loading={isLoading}
-            >
-              <Icon name="pause" />
-              หยุด
-            </Button>
-          )}
-          {(botSetting.status === 1 || botSetting.status === 2) && (
-            <Button
-              color="red"
-              icon
-              labelPosition="left"
-              onClick={setIsShownConfirmStop}
-              loading={isLoading}
-            >
-              <Icon name="close" />
-              ปิด
-            </Button>
-          )}
-        </div>
-        <div className="progress-info">
-          {botSetting.status === 1 || botSetting.status === 2 ? (
-            <>
-            <div>
-              {calculateLoss()}/{calculateLossTarget()} ({calculateLossProgressPercent()}%)
-            </div>
-            <div>
-              {calculateProfit()}/{calculateProfitTarget()} (
-              {calculateProfitProgressPercent()}%)
-            </div>
-            </>
-          ) : (
-            <>
-            <div>0/0 (0%)</div>
-            <div>0/0 (0%)</div>
-            </>
-          )}
-        </div>
-        {botSetting.status === 1 || botSetting.status === 2 ? (
-          <div className="progress-container">
-            <div className="progress-item progress-item--negative">
-              <Progress
-                percent={calculateLossProgressPercent()}
-                active
-                color="red"
-                size="small"
-              />
-            </div>
-            <div className="progress-item progress-item--positive">
-              <Progress
-                percent={calculateProfitProgressPercent()}
-                active
+        <div className="bot-info-float">
+          <p style={{ marginBottom: 0 }}>เครดิต</p>
+          <Header size="huge" style={{ color: "#fff", marginTop: 0 }}>
+            <CountUp end={balance} separator="," decimals={2} />
+          </Header>
+          <div style={{ marginBottom: 24 }}>
+            {!botSetting.id && (
+              <Button
+                color="blue"
+                icon
+                labelPosition="left"
+                onClick={create}
+                loading={isLoading}
+              >
+                สร้าง
+                <Icon name="save" />
+              </Button>
+            )}
+            {botSetting.status === 2 && (
+              <Button
                 color="teal"
-                size="small"
-              />
-            </div>
+                icon
+                labelPosition="left"
+                onClick={start}
+                loading={isLoading}
+              >
+                เริ่ม
+                <Icon name="play" />
+              </Button>
+            )}
+            {botSetting.status === 1 && (
+              <Button
+                color="yellow"
+                icon
+                labelPosition="left"
+                onClick={pause}
+                loading={isLoading}
+              >
+                <Icon name="pause" />
+                หยุด
+              </Button>
+            )}
+            {(botSetting.status === 1 || botSetting.status === 2) && (
+              <Button
+                color="red"
+                icon
+                labelPosition="left"
+                onClick={setIsShownConfirmStop}
+                loading={isLoading}
+              >
+                <Icon name="close" />
+                ปิด
+              </Button>
+            )}
           </div>
-        ) : (
-          <Progress percent={0} active color="teal" size="small" />
-        )}
+          <div className="progress-info">
+            {botSetting.status === 1 || botSetting.status === 2 ? (
+              <>
+                <div>
+                  {calculateLoss()}/{calculateLossTarget()} (
+                  {calculateLossProgressPercent()}%)
+                </div>
+                <div>
+                  {calculateProfit()}/{calculateProfitTarget()} (
+                  {calculateProfitProgressPercent()}%)
+                </div>
+              </>
+            ) : (
+              <>
+                <div>0/0 (0%)</div>
+                <div>0/0 (0%)</div>
+              </>
+            )}
+          </div>
+          {botSetting.status === 1 || botSetting.status === 2 ? (
+            <div className="progress-container">
+              <div className="progress-item progress-item--negative">
+                <Progress
+                  percent={calculateLossProgressPercent()}
+                  active
+                  color="red"
+                  size="small"
+                />
+              </div>
+              <div className="progress-item progress-item--positive">
+                <Progress
+                  percent={calculateProfitProgressPercent()}
+                  active
+                  color="teal"
+                  size="small"
+                />
+              </div>
+            </div>
+          ) : (
+            <Progress percent={0} active color="teal" size="small" />
+          )}
+        </div>
+        {botSetting.id &&
+          (botSetting.money_system === 3 || botSetting.money_system === 4) && (
+            <Card fluid>
+              <Card.Content>
+                <Card.Description style={{ marginBottom: 8 }}>
+                  ลาบูแชร์
+                </Card.Description>
+                <Card.Meta>{renderLabouchere()}</Card.Meta>
+              </Card.Content>
+            </Card>
+          )}
         {!botSetting.id && <BotGraph />}
         {(botSetting.status === 1 || botSetting.status === 2) && (
           <>

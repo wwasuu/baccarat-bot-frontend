@@ -306,3 +306,20 @@ color: #9f3a38!important;
 .ui.progress .bar, .ui.active.progress .bar {
   min-width: 0;
 }
+
+
+@media only screen and (max-width: 767px) and (min-width: 320px) {
+  .bot-info-float {
+    position: fixed;
+    top: 68px;
+    left: 0;
+    width: 100%;
+    background-color: #212121;
+    z-index: 10;
+    padding: 20px 40px 0 40px;
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 1px 6px 2px;
+  }
+  .content-container-c-float {
+    margin-top: 154px !important;
+  }
+}
