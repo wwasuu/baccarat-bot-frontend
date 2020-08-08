@@ -332,7 +332,18 @@ const BotInformation = () => {
   // }
 
   function renderLabouchere() {
-     return playData.toString()
+    let str = ''
+    for(let i = 0; i< playData.length; i++)
+    {
+      if(i !== playData.length - 1){
+        str += `${playData[i].toFixed(1)}, `
+      }else{
+        str += `${playData[i].toFixed(1)}`
+      }
+    } 
+    // return playData.join(', ')
+    return str;
+     
   }
   
 
