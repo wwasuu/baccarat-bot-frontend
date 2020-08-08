@@ -54,9 +54,22 @@ const BotInformation = () => {
   ] = useState(false);
   const [isShownConfirmStop, setIsShownConfirmStop] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [playData, setPlayData] = useState([])
 
   useEffect(() => {
     getUserBotTransaction();
+    const room = `user${auth.id}`;
+    socket.on(room, (data) => {
+      console.log(data)
+      if(data.action === "bet_result"){
+        setPlayData(data.playData)
+      }else if(data.action === "restart_result"){
+        if(data.data.success){
+          setPlayData(data.data.data.playData)
+        }
+        
+      }
+    })
   }, []);
 
   useEffect(() => {
@@ -309,14 +322,19 @@ const BotInformation = () => {
     }
   }
 
+  // function renderLabouchere() {
+  //   if (!botSetting.data) return "";
+  //   return botSetting.data
+  //     .replace("[", "")
+  //     .replace("]", "")
+  //     .split(",")
+  //     .join(", ");
+  // }
+
   function renderLabouchere() {
-    if (!botSetting.data) return "";
-    return botSetting.data
-      .replace("[", "")
-      .replace("]", "")
-      .split(",")
-      .join(", ");
+     return playData.toString()
   }
+  
 
   function restartWithProfit() {
     socket.emit("restart", { action: "restart", userId: auth.id, type: 1 });
@@ -526,7 +544,9 @@ const BotInformation = () => {
                   </Card.Description>
                   <Card.Meta>{renderMoneySystem()}</Card.Meta>
                 </Card.Content>
-                {/* <Card.Content extra>
+                {botSetting.id &&
+          (botSetting.money_system === 4) && (
+            <Card.Content extra>
                   <Button
                     color="teal"
                     icon
@@ -539,7 +559,8 @@ const BotInformation = () => {
                     รีสตาร์ท
                     <Icon name="undo" />
                   </Button>
-                </Card.Content> */}
+                </Card.Content>
+          )}
               </Card>
               <Card>
                 <Card.Content>

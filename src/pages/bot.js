@@ -81,7 +81,7 @@ const Setting = () => {
       const {
         data: { data, success },
       } = await axios.get(`${USER_BOT_TRANSACTION_URL}/${bot_id}`);
-      let transaction = [];
+      let transaction = [0];
       let newData = data.sort(compare);
       newData.forEach((element) => {
         transaction.push(element.wallet - element.bot.init_wallet);
