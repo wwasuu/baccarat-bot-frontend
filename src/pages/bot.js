@@ -7,9 +7,9 @@ import Navbar from "../components/Navbar";
 import { socket } from "../utils/socket";
 import { useSelector, useDispatch } from "react-redux";
 import { Menu, Icon, Table } from "semantic-ui-react";
-import { bot_transaction_set, balance_set, bot_setting_clear } from "../store";
+import { bot_transaction_set, wallet_set, bot_setting_clear, bot_setting_set } from "../store";
 import BotGraph from "../components/BotGraphs";
-import { USER_TRANSACTION_URL, USER_BOT_TRANSACTION_URL } from "../constants";
+import { USER_TRANSACTION_URL, USER_BOT_TRANSACTION_URL, WALLET_URL } from "../constants";
 
 function compare(a, b) {
   if (a.id < b.id) {
@@ -23,7 +23,6 @@ function compare(a, b) {
 
 const Setting = () => {
   const auth = useSelector((state) => state.auth);
-  var botTransaction = useSelector((state) => state.botTransaction);
   const dispatch = useDispatch();
   const history = useHistory();
   var [tableData, setTableData] = useState([]);
@@ -32,7 +31,6 @@ const Setting = () => {
 
   useEffect(() => {
     getUserTransaction();
-    // getUserBotTransaction();
     subscribeBot();
   }, []);
 
@@ -43,7 +41,7 @@ const Setting = () => {
       if (data.action === "bet_success") {
         setBet({ ...data.data, win_percent: data.win_percent });
       } else if (data.action === "bet_result") {
-        dispatch(balance_set(data.wallet));
+        getWallet()
         if (data.isStop) {
           dispatch(bot_setting_clear());
           setTimeout(() => {
@@ -72,6 +70,21 @@ const Setting = () => {
     }
   }
 
+  async function getWallet() {
+    try {
+      if (!auth.isLoggedIn) return;
+      const id = auth.id;
+      const {
+        data: { data, success },
+      } = await axios.get(`${WALLET_URL}/${id}`);
+      if (success) {
+        dispatch(wallet_set(data));
+      }
+    } catch (error) {
+      console.log("error while call getWallet()", error);
+    }
+  }
+
   async function getUserBotTransaction() {
     let bot_id = auth.bot_id;
     if (!bot_id) {
@@ -79,7 +92,7 @@ const Setting = () => {
     }
     try {
       const {
-        data: { data, success },
+        data: { data },
       } = await axios.get(`${USER_BOT_TRANSACTION_URL}/${bot_id}`);
       let transaction = [];
       let newData = data.sort(compare);
