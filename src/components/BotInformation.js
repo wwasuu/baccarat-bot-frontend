@@ -1,6 +1,6 @@
 import axios from "axios";
 import numeral from "numeral";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import CountUp from "react-countup";
 import { useDispatch, useSelector } from "react-redux";
@@ -13,9 +13,9 @@ import {
   Header,
   Icon,
   Modal,
-  Progress,
+  Progress
 } from "semantic-ui-react";
-import BotGraph from "./BotGraphs";
+import { BOT_URL, PAUSE_URL, START_URL, STOP_URL, USER_BOT_TRANSACTION_URL, USER_BOT_URL, WALLET_URL } from "../constants";
 import {
   auth_setbot,
   balance_set,
@@ -24,8 +24,10 @@ import {
   bot_setting_init,
   bot_setting_set,
   bot_transaction_set,
-  error_bot_setting_set,
+  error_bot_setting_set
 } from "../store";
+import { socket } from "../utils/socket";
+import BotGraph from "./BotGraphs";
 
 function compare(a, b) {
   if (a.id < b.id) {
@@ -46,7 +48,10 @@ const BotInformation = () => {
   var botTransaction = useSelector((state) => state.botTransaction);
   const dispatch = useDispatch();
   const errorBotSetting = useSelector((state) => state.errorBotSetting);
-  const [isShownConfirmPause, setIsShownConfirmPause] = useState(false);
+  const [
+    isShownConfirmResetMoneySystem,
+    setIsShownConfirmResetMoneySystem,
+  ] = useState(false);
   const [isShownConfirmStop, setIsShownConfirmStop] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -67,7 +72,7 @@ const BotInformation = () => {
       const {
         data: { data, success },
       } = await axios.get(
-        `https://api.ibot.bet/user_bot_transaction/${bot_id}`
+        `${USER_BOT_TRANSACTION_URL}/${bot_id}`
       );
       let transaction = [0];
       let newData = data.sort(compare);
@@ -93,8 +98,8 @@ const BotInformation = () => {
       if (!auth.isLoggedIn) return;
       const id = auth.id;
       const [{ data: botData }, { data: walletData }] = await Promise.all([
-        axios.get(`https://api.ibot.bet/user_bot/${id}`),
-        axios.get(`https://api.ibot.bet/wallet/${id}`),
+        axios.get(`${USER_BOT_URL}/${id}`),
+        axios.get(`${WALLET_URL}/${id}`),
       ]);
       if (botData.success && botData.data.bot) {
         dispatch(
@@ -121,7 +126,7 @@ const BotInformation = () => {
       const id = auth.id;
       const {
         data: { data, success },
-      } = await axios.get(`https://api.ibot.bet/wallet/${id}`);
+      } = await axios.get(`${WALLET_URL}/${id}`);
       if (success) {
         dispatch(balance_set(data.myWallet.MAIN_WALLET.chips.credit));
         dispatch(
@@ -158,7 +163,7 @@ const BotInformation = () => {
       setIsLoading(true);
       const {
         data: { data, success },
-      } = await axios.post("https://api.ibot.bet/bot", {
+      } = await axios.post(BOT_URL, {
         ...botSetting,
         username: auth.username,
       });
@@ -184,7 +189,7 @@ const BotInformation = () => {
         setIsLoading(true);
         const {
           data: { success },
-        } = await axios.post("https://api.ibot.bet/start", {
+        } = await axios.post(START_URL, {
           username: auth.username,
         });
         if (success) {
@@ -207,7 +212,7 @@ const BotInformation = () => {
       setIsLoading(true);
       const {
         data: { success },
-      } = await axios.post("https://api.ibot.bet/pause", {
+      } = await axios.post(PAUSE_URL, {
         username: auth.username,
       });
       if (success) {
@@ -227,7 +232,7 @@ const BotInformation = () => {
   async function stop() {
     try {
       setIsLoading(true);
-      const res = await axios.post("https://api.ibot.bet/stop", {
+      const res = await axios.post(STOP_URL, {
         username: auth.username,
       });
       dispatch(bot_setting_clear());
@@ -311,6 +316,16 @@ const BotInformation = () => {
       .replace("]", "")
       .split(",")
       .join(", ");
+  }
+
+  function restartWithProfit() {
+    socket.emit("restart", { action: "restart", userId: auth.id, type: 1 });
+    setIsShownConfirmResetMoneySystem(false);
+  }
+
+  function restartWithProfitAndLoss() {
+    socket.emit("restart", { action: "restart", userId: auth.id, type: 2 });
+    setIsShownConfirmResetMoneySystem(false);
   }
 
   const chart = {
@@ -511,6 +526,20 @@ const BotInformation = () => {
                   </Card.Description>
                   <Card.Meta>{renderMoneySystem()}</Card.Meta>
                 </Card.Content>
+                {/* <Card.Content extra>
+                  <Button
+                    color="teal"
+                    icon
+                    labelPosition="left"
+                    fluid
+                    loading={isLoading}
+                    onClick={() => setIsShownConfirmResetMoneySystem(true)}
+                    disabled={botSetting.status === 1 || botSetting.status === 3}
+                  >
+                    รีสตาร์ท
+                    <Icon name="undo" />
+                  </Button>
+                </Card.Content> */}
               </Card>
               <Card>
                 <Card.Content>
@@ -563,6 +592,29 @@ const BotInformation = () => {
           </Button>
           <Button color="teal" onClick={stop}>
             <Icon name="checkmark" /> ใช่
+          </Button>
+        </Modal.Actions>
+      </Modal>
+      <Modal
+        basic
+        onClose={() => setIsShownConfirmResetMoneySystem(false)}
+        onOpen={() => setIsShownConfirmResetMoneySystem(true)}
+        open={isShownConfirmResetMoneySystem}
+        size="small"
+        closeOnDimmerClick={false}
+      >
+        <Header icon>เลือกรูปแบบการรีสตาร์ท</Header>
+        <Modal.Actions>
+          <Button onClick={() => setIsShownConfirmResetMoneySystem(false)}>
+            <Icon name="remove" /> ยกเลิก
+          </Button>
+          <Button color="teal" onClick={restartWithProfit}>
+            <Icon name="checkmark" />
+            แบบกำไร
+          </Button>
+          <Button color="teal" onClick={restartWithProfitAndLoss}>
+            <Icon name="checkmark" />
+            แบบกำไร + ขาดทุน
           </Button>
         </Modal.Actions>
       </Modal>

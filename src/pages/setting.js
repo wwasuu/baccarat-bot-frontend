@@ -31,14 +31,23 @@ const Setting = () => {
 
   function handleChangeProfit(e) {
     dispatch(error_bot_setting_clear());
-    const value = +e.target.value;
-    const percent = +((100 * value) / balance).toFixed(2);
-    setProfit(value);
+    const value = e.target.value;
+    if (value === "") {
+      setProfit("");
+      dispatch(bot_setting_set({
+        ...botSetting,
+        profit_percent: "",
+        profit_threshold: 0,
+      }))
+      return
+    }
+    const percent = +((100 * +value) / balance).toFixed(2);
+    setProfit(+value);
     dispatch(
       bot_setting_set({
         ...botSetting,
         profit_percent: percent,
-        profit_threshold: botSetting.init_wallet + value,
+        profit_threshold: botSetting.init_wallet + +value,
       })
     );
   }
@@ -46,12 +55,20 @@ const Setting = () => {
   function handleChangeProfitPercent(e) {
     dispatch(error_bot_setting_clear());
     const value = e.target.value;
-    const integer = Math.floor((balance * value) / 100);
-
+    if (value === "") {
+      setProfit("");
+      dispatch(bot_setting_set({
+        ...botSetting,
+        profit_percent: "",
+        profit_threshold: 0,
+      }))
+      return
+    }
+    const integer = Math.floor((balance * +value) / 100);
     dispatch(
       bot_setting_set({
         ...botSetting,
-        profit_percent: value,
+        profit_percent: +value,
         profit_threshold: botSetting.init_wallet + integer,
       })
     );
@@ -60,17 +77,26 @@ const Setting = () => {
 
   function handleChangeLoss(e) {
     dispatch(error_bot_setting_clear());
-    const value = +e.target.value;
-    const percent = +((100 * value) / balance).toFixed(2);
+    const value = e.target.value;
+    if (value === "") {
+      setLoss("");
+      dispatch(bot_setting_set({
+        ...botSetting,
+        loss_percent: "",
+        loss_threshold: 0,
+      }))
+      return
+    }
+    const percent = +((100 * +value) / balance).toFixed(2);
     if (percent > 100) {
       dispatch(error_bot_setting_set("LOSS_OVER_LIMIT"));
     }
-    setLoss(value);
+    setLoss(+value);
     dispatch(
       bot_setting_set({
         ...botSetting,
         loss_percent: percent,
-        loss_threshold: botSetting.init_wallet - value,
+        loss_threshold: botSetting.init_wallet - +value,
       })
     );
   }
@@ -78,7 +104,16 @@ const Setting = () => {
   function handleChangeLossPercent(e) {
     dispatch(error_bot_setting_clear());
     const value = e.target.value;
-    const integer = Math.floor((balance * value) / 100);
+    if (value === "") {
+      setLoss("");
+      dispatch(bot_setting_set({
+        ...botSetting,
+        loss_percent: "",
+        loss_threshold: 0,
+      }))
+      return
+    }
+    const integer = Math.floor((balance * +value) / 100);
     if (value > 100) {
       dispatch(error_bot_setting_set("LOSS_OVER_LIMIT"));
     }
@@ -86,7 +121,7 @@ const Setting = () => {
     dispatch(
       bot_setting_set({
         ...botSetting,
-        loss_percent: value,
+        loss_percent: +value,
         loss_threshold: botSetting.init_wallet - integer,
       })
     );
@@ -116,7 +151,7 @@ const Setting = () => {
             mobile={16}
             tablet={16}
             computer={8}
-            className="content-container-c"
+            className="content-container-c content-container-c-float-b"
           >
             <BotInformation />
           </Grid.Column>
@@ -342,7 +377,7 @@ const Setting = () => {
                       type="number"
                       icon="dollar sign"
                       iconPosition="left"
-                      value={profit == 0 ? "" : profit}
+                      value={profit}
                       onChange={handleChangeProfit}
                     />
                   </div>
@@ -360,9 +395,7 @@ const Setting = () => {
                       icon="percent"
                       iconPosition="left"
                       value={
-                        botSetting.profit_percent == 0
-                          ? ""
-                          : botSetting.profit_percent
+                        botSetting.profit_percent
                       }
                       onChange={handleChangeProfitPercent}
                     />
@@ -391,7 +424,7 @@ const Setting = () => {
                       icon="dollar sign"
                       iconPosition="left"
                       onChange={handleChangeLoss}
-                      value={loss == 0 ? "" : loss}
+                      value={loss}
                       id="form-input-first-name"
                     />
                   </div>
@@ -407,7 +440,7 @@ const Setting = () => {
                       icon="percent"
                       iconPosition="left"
                       onChange={handleChangeLossPercent}
-                      value={botSetting.loss_percent == 0 ? "" : botSetting.loss_percent}
+                      value={botSetting.loss_percent}
                     />
                   </div>
                 </div>

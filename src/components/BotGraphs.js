@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Checkbox, Card, Container } from "semantic-ui-react";
+import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
-import { socket } from "../pages/socket";
+import { Card } from "semantic-ui-react";
+import { socket } from "../utils/socket";
+import{ BOT_TRANSACTION_URL } from "../constants"
 
 function compare(a, b) {
   if (a.id < b.id) {
@@ -16,13 +17,6 @@ function compare(a, b) {
 
 export default function BotGrapj() {
   const [betSide, setBetSide] = useState(["DEFAULT"]);
-  const [show, setShow] = useState({
-    DEFAULT: true,
-    BANKER: false,
-    PLAYER: true,
-  });
-  const [myGraph, setMyGraph] = useState(graphData);
-  const [colorOption, setColorOption] = useState();
   var [defaultGraph, setDefaultGraph] = useState({
     multi: [
       {
@@ -77,13 +71,6 @@ export default function BotGrapj() {
       },
     ],
   });
-
-  var [graphData, setGraph] = useState([
-    {
-      name: "series 1",
-      data: [],
-    },
-  ]);
 
   useEffect(() => {
     getBotTransaction();
@@ -268,8 +255,8 @@ export default function BotGrapj() {
   async function getBotTransaction() {
     try {
       const {
-        data: { data, success },
-      } = await axios.get("https://api.ibot.bet/bot_transaction?type=DEFAULT");
+        data: { data },
+      } = await axios.get(`${BOT_TRANSACTION_URL}?type=DEFAULT`);
       let newData = data.sort(compare);
       let multiGraph = [
         {
@@ -314,7 +301,7 @@ export default function BotGrapj() {
     try {
       const {
         data: { data, success },
-      } = await axios.get("https://api.ibot.bet/bot_transaction?type=BANKER");
+      } = await axios.get(`${BOT_TRANSACTION_URL}?type=BANKER`);
       let newData = data.sort(compare);
       newData.shift();
       let multiGraph = [
@@ -370,7 +357,7 @@ export default function BotGrapj() {
     try {
       const {
         data: { data, success },
-      } = await axios.get("https://api.ibot.bet/bot_transaction?type=PLAYER");
+      } = await axios.get(`${BOT_TRANSACTION_URL}?type=PLAYER`);
       let newData = data.sort(compare);
       newData.shift();
       let multiGraph = [

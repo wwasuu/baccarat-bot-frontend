@@ -11,11 +11,12 @@ import {
   Grid,
   Header,
   Icon,
+  Message, 
   Segment,
-  Statistic,
-  Message,
+  Statistic
 } from "semantic-ui-react";
-import { auth_loading, auth_login } from "../../store";
+import { auth_login } from "../../store";
+import { LOGIN_URL, REGISTER_URL } from "../../constants"
 
 const Login = () => {
   const history = useHistory();
@@ -49,7 +50,7 @@ const Login = () => {
       clearError()
       const {
         data: { data, success, message },
-      } = await axios.post("https://api.ibot.bet/login", {
+      } = await axios.post(LOGIN_URL, {
         username,
         password,
       });
@@ -214,7 +215,7 @@ const Login = () => {
             </Segment>
             <Form.Field className="text-center">
               คุณยังไม่มีบัญชีใช่ไหม?{" "}
-              <a href="http://truthbet.com/friends/invite/vyKslk17Uz">สมัคร</a>
+              <a href={REGISTER_URL}>สมัคร</a>
             </Form.Field>
           </Form>
           <Statistic.Group

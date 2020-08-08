@@ -4,11 +4,12 @@ import { Card, Container, Grid, Header } from "semantic-ui-react";
 import { useHistory } from "react-router-dom";
 import BotInformation from "../components/BotInformation";
 import Navbar from "../components/Navbar";
-import { socket } from "./socket";
+import { socket } from "../utils/socket";
 import { useSelector, useDispatch } from "react-redux";
 import { Menu, Icon, Table } from "semantic-ui-react";
 import { bot_transaction_set, balance_set, bot_setting_clear } from "../store";
 import BotGraph from "../components/BotGraphs";
+import { USER_TRANSACTION_URL, USER_BOT_TRANSACTION_URL } from "../constants";
 
 function compare(a, b) {
   if (a.id < b.id) {
@@ -61,7 +62,7 @@ const Setting = () => {
     let id = auth.id;
     if (!id) return;
     try {
-      let url = `https://api.ibot.bet/user_transaction/${id}`;
+      let url = `${USER_TRANSACTION_URL}/${id}`;
       const {
         data: { data, success },
       } = await axios.get(url);
@@ -79,9 +80,7 @@ const Setting = () => {
     try {
       const {
         data: { data, success },
-      } = await axios.get(
-        `https://api.ibot.bet/user_bot_transaction/${bot_id}`
-      );
+      } = await axios.get(`${USER_BOT_TRANSACTION_URL}/${bot_id}`);
       let transaction = [];
       let newData = data.sort(compare);
       newData.forEach((element) => {
@@ -110,7 +109,7 @@ const Setting = () => {
             mobile={16}
             tablet={16}
             computer={8}
-            className="content-container-c content-container-c-float"
+            className="content-container-c content-container-c-float-a"
           >
             <BotInformation />
           </Grid.Column>

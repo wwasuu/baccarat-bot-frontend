@@ -319,7 +319,10 @@ color: #9f3a38!important;
     padding: 20px 40px 0 40px;
     box-shadow: rgba(0, 0, 0, 0.2) 0px 1px 6px 2px;
   }
-  .content-container-c-float {
+  .content-container-c-float-a {
     margin-top: 154px !important;
+  }
+  .content-container-c-float-b {
+    margin-top: 220px !important;
   }
 }

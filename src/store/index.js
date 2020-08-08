@@ -115,23 +115,11 @@ const botSetting = (state = initialBotSettingState, action) => {
     case "BOT_SETTING/INIT":
       state = {
         ...action.payload,
-        // profit_threshold:
-        //   action.payload.init_wallet +
-        //   action.payload.init_wallet * (action.payload.profit_percent / 100),
-        // loss_threshold:
-        //   action.payload.init_wallet -
-        //   action.payload.init_wallet * (action.payload.loss_percent / 100),
       };
       break;
     case "BOT_SETTING/SET":
       state = {
         ...action.payload,
-        // profit_threshold:
-        //   action.payload.init_wallet +
-        //   action.payload.init_wallet * (action.payload.profit_percent / 100),
-        // loss_threshold:
-        //   action.payload.init_wallet -
-        //   action.payload.init_wallet * (action.payload.loss_percent / 100),
       };
       break;
     case "BOT_SETTING/CLEAR":
@@ -147,13 +135,11 @@ const botSetting = (state = initialBotSettingState, action) => {
 const balance = (state = initialBalanceState, action) => {
   switch (action.type) {
     case "BALANCE/SET":
-      state = action.payload;
-      break;
+      return action.payload;
     default:
-      state = state;
-      break;
+      return state
   }
-  return state;
+
 };
 
 const initialBotTransaction = [];
@@ -166,13 +152,11 @@ const bot_transaction_set = (payload) => ({
 const botTransaction = (state = initialBotTransaction, action) => {
   switch (action.type) {
     case "BOT_TRANSACTION/SET":
-      state = action.payload;
-      break;
+      return action.payload;
     default:
-      state = state;
-      break;
+      return state;
+      
   }
-  return state;
 };
 
 const initialErrorBotSetting = [];
@@ -189,16 +173,12 @@ const error_bot_setting_clear = () => ({
 const errorBotSetting = (state = initialErrorBotSetting, action) => {
   switch (action.type) {
     case "ERROR_BOT_SETTING/SET":
-      state = action.payload;
-      break;
+      return action.payload;
     case "ERROR_BOT_SETTING/CLEAR":
-      state = initialErrorBotSetting;
-      break;
+      return initialErrorBotSetting;
     default:
-      state = state;
-      break;
+      return state;
   }
-  return state;
 };
 
 const rootReducer = combineReducers({
