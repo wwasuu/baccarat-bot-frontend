@@ -346,3 +346,16 @@ color: #9f3a38!important;
   grid-template-columns: 1fr 1fr 1fr;
   margin-bottom: 8px;
 }
+
+.ui.checkbox label, .ui.checkbox+label {
+  font-size: 1.14285714rem;
+  color: #fff;
+}
+
+.ui.checkbox label:hover, .ui.checkbox+label:hover {
+  color: #fff;
+}
+
+.withdraw-label {
+  font-size: 1rem;
+}
