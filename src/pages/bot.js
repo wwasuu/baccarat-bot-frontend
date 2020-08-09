@@ -1,4 +1,5 @@
 import axios from "axios";
+import cn from "classnames"
 import React, { useEffect, useState } from "react";
 import { Card, Container, Grid, Header } from "semantic-ui-react";
 import { useHistory } from "react-router-dom";
@@ -23,10 +24,11 @@ function compare(a, b) {
 
 const Setting = () => {
   const auth = useSelector((state) => state.auth);
+  const botSetting = useSelector((state) => state.botSetting);
   const dispatch = useDispatch();
   const history = useHistory();
-  var [tableData, setTableData] = useState([]);
-
+  const [tableData, setTableData] = useState([]);
+  const [isShownProgressBar, setIsShownProgressBar] = useState(true)
   const [bet, setBet] = useState({});
 
   useEffect(() => {
@@ -86,7 +88,7 @@ const Setting = () => {
   }
 
   async function getUserBotTransaction() {
-    let bot_id = auth.bot_id;
+    let bot_id = botSetting.bot_id;
     if (!bot_id) {
       return;
     }
@@ -113,6 +115,9 @@ const Setting = () => {
       console.log("error while call getUserBotTransaction()", error);
     }
   }
+
+  const botInfoContinerClass = cn("content-container-c", { "content-container-c-float-a": isShownProgressBar })
+
   return (
     <>
       <Navbar />
@@ -122,9 +127,9 @@ const Setting = () => {
             mobile={16}
             tablet={16}
             computer={8}
-            className="content-container-c content-container-c-float-a"
+            className={botInfoContinerClass}
           >
-            <BotInformation />
+            <BotInformation isShownProgressBar={isShownProgressBar} setIsShownProgressBar={setIsShownProgressBar} />
           </Grid.Column>
           <Grid.Column
             mobile={16}

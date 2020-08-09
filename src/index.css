@@ -163,26 +163,6 @@ p {
   color: #fff;
 }
 
-@media only screen and (max-width: 768px) and (min-width: 320px) {
-  .main-container {
-    height: 100vh;
-  }
-  .main-container-b {
-    background-color: #212121;
-    overflow: auto;
-  }
-  .statistic-container {
-    display: none !important;
-  }
-  .content-container-a {
-    display: none !important;
-  }
-  .content-container-a, .content-container-b, .content-container-c {
-    padding: 24px !important;
-    height: auto;
-  }
-}
-
 .disable {
   cursor: not-allowed !important;
 }
@@ -315,32 +295,6 @@ color: #9f3a38!important;
   min-width: 0;
 }
 
-
-@media only screen and (max-width: 768px) and (min-width: 320px) {
-  .bot-info-float {
-    position: fixed;
-    top: 68px;
-    left: 0;
-    width: 100%;
-    background-color: #212121;
-    z-index: 10;
-    padding: 20px 40px 0 40px;
-    box-shadow: rgba(0, 0, 0, 0.2) 0px 1px 6px 2px;
-  }
-  .content-container-c-float-a {
-    margin-top: 154px !important;
-  }
-  .content-container-c-float-b {
-    margin-top: 220px !important;
-  }
-  .divider-container-mobile {
-    display: block;
-  }
-  .divider-container-desktop {
-    display: none;
-  }
-}
-
 .wallet-container {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -358,4 +312,95 @@ color: #9f3a38!important;
 
 .withdraw-label {
   font-size: 1rem;
+}
+
+.chip-container > button {
+  margin-bottom: 4px !important;
+}
+
+.wallet-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: #fff;
+}
+
+.wallet-loader > p {
+  margin-top: 24px;
+}
+
+.collapse-button {
+  display: none !important;
+  position: absolute;
+  top: 12px;
+  right: 32px;
+  color: #fff;
+}
+
+.collapse-button-hidden {
+  top: 0px;
+  right: 24px;
+}
+
+@media only screen and (max-width: 768px) and (min-width: 320px) {
+  .main-container {
+    height: 100vh;
+  }
+  .main-container-b {
+    background-color: #212121;
+    overflow: auto;
+  }
+  .statistic-container {
+    display: none !important;
+  }
+  .content-container-a {
+    display: none !important;
+  }
+  .content-container-a, .content-container-b, .content-container-c {
+    padding: 24px !important;
+    height: auto;
+  }
+  .bot-info-float {
+    position: fixed;
+    top: 68px;
+    left: 0;
+    width: 100%;
+    background-color: #212121;
+    z-index: 10;
+    padding: 20px 40px 0 40px;
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 1px 6px 2px;
+  }
+  .content-container-c-float-a {
+    margin-top: 332px !important;
+  }
+  .content-container-c-float-b {
+    margin-top: 196px !important;
+  }
+  .divider-container-mobile {
+    display: block;
+  }
+  .divider-container-desktop {
+    display: none;
+  }
+  .wallet-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    margin-bottom: 8px;
+  }
+  .switch-group > .ui.toggle.checkbox {
+    margin-top: 8px;
+  }
+  .collapse-button {
+    display: block !important;
+  }
 }

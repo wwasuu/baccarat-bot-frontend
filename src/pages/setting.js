@@ -27,6 +27,7 @@ const Setting = () => {
   const [profit, setProfit] = useState("");
   const [loss, setLoss] = useState("");
   const dispatch = useDispatch();
+  const [isShownProgressBar, setIsShownProgressBar] = useState(true)
 
   function handleChangeProfit(e) {
     dispatch(error_bot_setting_clear());
@@ -157,6 +158,8 @@ const Setting = () => {
     })
   }
 
+  const botInfoContinerClass = cn("content-container-c", { "content-container-c-float-b": isShownProgressBar })
+
   return (
     <>
       <Navbar />
@@ -166,9 +169,9 @@ const Setting = () => {
             mobile={16}
             tablet={16}
             computer={8}
-            className="content-container-c content-container-c-float-b"
+            className={botInfoContinerClass}
           >
-            <BotInformation />
+            <BotInformation isShownProgressBar={isShownProgressBar} setIsShownProgressBar={setIsShownProgressBar} />
           </Grid.Column>
           <Grid.Column
             mobile={16}
@@ -283,7 +286,7 @@ const Setting = () => {
                 ข้อแนะนำการเลือกชิพนั้นไม่ควรกำหนดชิพเริ่มต้นเกิน 1% ของเงินทุน
                 เช่นทุน 5,000 บาท ควรเริ่มเล่น 50 บาทเป็นต้น
               </p>
-              <div style={{ marginTop: 12 }}>
+              <div className="chip-container">
                 <Button
                   color={botSetting.init_bet === 50 ? "teal" : ""}
                   onClick={() =>
@@ -361,7 +364,6 @@ const Setting = () => {
                   onClick={() =>
                     dispatch(bot_setting_set({ ...botSetting, init_bet: 2500 }))
                   }
-                  style={{ marginTop: 4 }}
                 >
                   2,500
                 </Button>

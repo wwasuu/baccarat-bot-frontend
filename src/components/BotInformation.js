@@ -25,7 +25,6 @@ import {
   WALLET_URL,
 } from "../constants";
 import {
-  auth_setbot,
   wallet_set,
   bot_clear,
   bot_setting_clear,
@@ -47,7 +46,7 @@ function compare(a, b) {
   return 0;
 }
 
-const BotInformation = () => {
+const BotInformation = (props) => {
   const history = useHistory();
   const auth = useSelector((state) => state.auth);
   const botSetting = useSelector((state) => state.botSetting);
@@ -61,44 +60,44 @@ const BotInformation = () => {
   ] = useState(false);
   const [isShownConfirmStop, setIsShownConfirmStop] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [playData, setPlayData] = useState([])
+  const [isLoadingWallet, setIsLoadingWallet] = useState(true);
+  const [playData, setPlayData] = useState([]);
 
   useEffect(() => {
     getUserBotTransaction();
     const room = `user${auth.id}`;
     socket.on(room, (data) => {
-      console.log(data)
-      if(data.action === "bet_result"){
-        setPlayData(data.playData)
-        setBotData(data.botObj)
-      }else if(data.action === "restart_result"){
-        if(data.data.success){
-          setPlayData(data.data.data.playData)
+      console.log(data);
+      if (data.action === "bet_result") {
+        setPlayData(data.playData);
+        setBotData(data.botObj);
+      } else if (data.action === "restart_result") {
+        if (data.data.success) {
+          setPlayData(data.data.data.playData);
         }
-        
       }
-    })
+    });
   }, []);
 
   useEffect(() => {
     getUserBot();
   }, [auth.isLoggedIn]);
 
-  async function setBotData(data){
-    console.log(data)
+  async function setBotData(data) {
+    console.log(data);
     dispatch(
       bot_setting_init({
         ...botSetting,
         is_infinite: data.is_infinite,
         profit_wallet: data.profit_wallet,
         deposite_count: data.deposite_count,
-        status: data.status
+        status: data.status,
       })
     );
   }
 
   async function getUserBotTransaction() {
-    let bot_id = auth.bot_id;
+    let bot_id = botSetting.bot_id;
     if (!bot_id) {
       return;
     }
@@ -128,36 +127,41 @@ const BotInformation = () => {
   async function getUserBot() {
     try {
       if (!auth.isLoggedIn) return;
+      if (botSetting.bot_id) return;
+      setIsLoadingWallet(true);
       const id = auth.id;
       const [{ data: botData }, { data: walletData }] = await Promise.all([
         axios.get(`${USER_BOT_URL}/${id}`),
         axios.get(`${WALLET_URL}/${id}`),
       ]);
       if (botData.success && botData.data.bot) {
+        setIsLoadingWallet(false);
         dispatch(wallet_set(walletData.data));
         dispatch(
           bot_setting_init({
             ...botData.data.bot,
           })
         );
-        dispatch(auth_setbot({ ...botData.data.bot }));
         history.push("/bot");
       } else {
         getWallet();
       }
     } catch (error) {
-      console.log("error while call get user bot()", error);
+      setIsLoadingWallet(false);
+      console.log("error while call getUserBot()", error);
     }
   }
 
   async function getWallet() {
     try {
       if (!auth.isLoggedIn) return;
+      setIsLoadingWallet(true);
       const id = auth.id;
       const {
         data: { data, success },
       } = await axios.get(`${WALLET_URL}/${id}`);
       if (success) {
+        setIsLoadingWallet(false);
         dispatch(wallet_set(data));
         dispatch(
           bot_setting_init({
@@ -167,6 +171,7 @@ const BotInformation = () => {
         );
       }
     } catch (error) {
+      setIsLoadingWallet(false);
       console.log("error while call getWallet()", error);
     }
   }
@@ -204,7 +209,6 @@ const BotInformation = () => {
             ...data,
           })
         );
-        dispatch(auth_setbot({ ...data }));
         history.push("/bot");
       }
     } catch (error) {
@@ -277,8 +281,11 @@ const BotInformation = () => {
   }
 
   function calculateProfit() {
-    if (wallet.play_wallet <= botSetting.init_wallet + botSetting.profit_wallet) return 0;
-    return numeral(wallet.play_wallet - botSetting.init_wallet - botSetting.profit_wallet).format("0,0");
+    if (wallet.play_wallet <= botSetting.init_wallet + botSetting.profit_wallet)
+      return 0;
+    return numeral(
+      wallet.play_wallet - botSetting.init_wallet - botSetting.profit_wallet
+    ).format("0,0");
   }
 
   function calculateProfitTarget() {
@@ -288,8 +295,13 @@ const BotInformation = () => {
   }
 
   function calculateLoss() {
-    if (wallet.play_wallet > botSetting.init_wallet + botSetting.profit_wallet) return 0;
-    return numeral(Math.abs(wallet.play_wallet - botSetting.init_wallet - botSetting.profit_wallet)).format("0,0");
+    if (wallet.play_wallet > botSetting.init_wallet + botSetting.profit_wallet)
+      return 0;
+    return numeral(
+      Math.abs(
+        wallet.play_wallet - botSetting.init_wallet - botSetting.profit_wallet
+      )
+    ).format("0,0");
   }
 
   function calculateLossTarget() {
@@ -299,17 +311,22 @@ const BotInformation = () => {
   }
 
   function calculateProfitProgressPercent() {
-    if (wallet.play_wallet < botSetting.init_wallet + botSetting.profit_wallet) return 0;
+    if (wallet.play_wallet < botSetting.init_wallet + botSetting.profit_wallet)
+      return 0;
     const target = botSetting.profit_threshold - botSetting.init_wallet;
-    const current = wallet.play_wallet - botSetting.init_wallet - botSetting.profit_wallet;
-    if((100 * current) / target < 1) return 0;
+    const current =
+      wallet.play_wallet - botSetting.init_wallet - botSetting.profit_wallet;
+    if ((100 * current) / target < 1) return 0;
     return Math.round((100 * current) / target);
   }
 
   function calculateLossProgressPercent() {
-    if (wallet.play_wallet > botSetting.init_wallet + botSetting.profit_wallet) return 0;
+    if (wallet.play_wallet > botSetting.init_wallet + botSetting.profit_wallet)
+      return 0;
     const target = botSetting.init_wallet - botSetting.loss_threshold;
-    const current = wallet.play_wallet - botSetting.init_wallet - botSetting.profit_wallet;
+    const current = Math.abs(
+      wallet.play_wallet - botSetting.init_wallet - botSetting.profit_wallet
+    );
     return Math.round((100 * current) / target);
   }
 
@@ -341,30 +358,18 @@ const BotInformation = () => {
     }
   }
 
-  // function renderLabouchere() {
-  //   if (!botSetting.data) return "";
-  //   return botSetting.data
-  //     .replace("[", "")
-  //     .replace("]", "")
-  //     .split(",")
-  //     .join(", ");
-  // }
-
   function renderLabouchere() {
-    let str = ''
-    for(let i = 0; i< playData.length; i++)
-    {
-      if(i !== playData.length - 1){
-        str += `${playData[i].toFixed(1)}, `
-      }else{
-        str += `${playData[i].toFixed(1)}`
+    let str = "";
+    for (let i = 0; i < playData.length; i++) {
+      if (i !== playData.length - 1) {
+        str += `${playData[i].toFixed(1)}, `;
+      } else {
+        str += `${playData[i].toFixed(1)}`;
       }
-    } 
+    }
     // return playData.join(', ')
     return str;
-     
   }
-  
 
   function restartWithProfit() {
     socket.emit("restart", { action: "restart", userId: auth.id, type: 1 });
@@ -435,125 +440,163 @@ const BotInformation = () => {
 
   return (
     <>
-      <Container text fluid>
-        <div className="bot-info-float">
-          <div className="wallet-container">
-            <div>
-              <p style={{ marginBottom: 0 }}>กระเป๋าหลัก</p>
-              <Header size="large" style={{ color: "#fff", marginTop: 0 }}>
-                <CountUp end={wallet.all_wallet} separator="," decimals={2} /> <div className="withdraw-label">ถอน {botSetting.deposite_count || 0} ครั้ง</div>
-              </Header>
-            </div>
-
-            <div>
-              <p style={{ marginBottom: 0 }}>กระเป๋าลงทุน</p>
-              <Header size="large" style={{ color: "#fff", marginTop: 0 }}>
-                <CountUp end={wallet.play_wallet - botSetting.profit_wallet} separator="," decimals={2} />
-              </Header>
-            </div>
-            <div>
-              <p style={{ marginBottom: 0 }}>กระเป๋ากำไร</p>
-              <Header size="large" style={{ color: "#fff", marginTop: 0 }}>
-                <CountUp
-                  end={botSetting.profit_wallet}
-                  separator=","
-                  decimals={2}
-                />
-              </Header>
-            </div>
-          </div>
-          <div style={{ marginBottom: 24 }}>
-            {!botSetting.id && (
-              <Button
-                color="blue"
-                icon
-                labelPosition="left"
-                onClick={create}
-                loading={isLoading}
-              >
-                สร้าง
-                <Icon name="save" />
-              </Button>
-            )}
-            {botSetting.status === 2 && (
-              <Button
-                color="teal"
-                icon
-                labelPosition="left"
-                onClick={start}
-                loading={isLoading}
-              >
-                เริ่ม
-                <Icon name="play" />
-              </Button>
-            )}
-            {botSetting.status === 1 && (
-              <Button
-                color="yellow"
-                icon
-                labelPosition="left"
-                onClick={pause}
-                loading={isLoading}
-              >
-                <Icon name="pause" />
-                หยุด
-              </Button>
-            )}
-            {(botSetting.status === 1 || botSetting.status === 2) && (
-              <Button
-                color="red"
-                icon
-                labelPosition="left"
-                onClick={setIsShownConfirmStop}
-                loading={isLoading}
-              >
-                <Icon name="close" />
-                ปิด
-              </Button>
-            )}
-          </div>
-          <div className="progress-info">
-            {botSetting.status === 1 || botSetting.status === 2 ? (
-              <>
-                <div>
-                  {calculateLoss()}/{calculateLossTarget()} (
-                  {calculateLossProgressPercent()}%)
-                </div>
-                <div>
-                  {calculateProfit()}/{calculateProfitTarget()} (
-                  {calculateProfitProgressPercent()}%)
-                </div>
-              </>
-            ) : (
-              <>
-                <div>0/0 (0%)</div>
-                <div>0/0 (0%)</div>
-              </>
-            )}
-          </div>
-          {botSetting.status === 1 || botSetting.status === 2 ? (
-            <div className="progress-container">
-              <div className="progress-item progress-item--negative">
-                <Progress
-                  percent={calculateLossProgressPercent()}
-                  active
-                  color="red"
-                  size="small"
-                />
-              </div>
-              <div className="progress-item progress-item--positive">
-                <Progress
-                  percent={calculateProfitProgressPercent()}
-                  active
-                  color="teal"
-                  size="small"
-                />
-              </div>
-            </div>
-          ) : (
-            <Progress percent={0} active color="teal" size="small" />
-          )}
+      {isLoadingWallet && (
+        <div className="wallet-loader">
+          <Icon name="spinner" loading size="big" />
+          <p>...กำลังโหลดข้อมูล</p>
         </div>
+      )}
+      <Container text fluid>
+        {!props.isShownProgressBar && (
+          <Icon
+            className="collapse-button collapse-button-hidden"
+            name="angle up"
+            onClick={() => props.setIsShownProgressBar(true)}
+          />
+        )}
+        {props.isShownProgressBar && (
+          <div className="bot-info-float">
+            <div className="wallet-container">
+              <Icon
+                className="collapse-button"
+                name="angle down"
+                onClick={() => props.setIsShownProgressBar(false)}
+              />
+              <div>
+                <p style={{ marginBottom: 0 }}>กระเป๋าหลัก</p>
+                <Header size="large" style={{ color: "#fff", marginTop: 0 }}>
+                  <CountUp end={wallet.all_wallet} separator="," decimals={2} />
+                  {botSetting.id && (
+                    <div className="withdraw-label">
+                      ถอน {botSetting.deposite_count || 0} ครั้ง
+                    </div>
+                  )}
+                </Header>
+              </div>
+              {botSetting.id && (
+                <>
+                  <div>
+                    <p style={{ marginBottom: 0 }}>กระเป๋าลงทุน</p>
+                    <Header
+                      size="large"
+                      style={{ color: "#fff", marginTop: 0 }}
+                    >
+                      <CountUp
+                        end={wallet.play_wallet - botSetting.profit_wallet}
+                        separator=","
+                        decimals={2}
+                      />
+                    </Header>
+                  </div>
+                  <div>
+                    <p style={{ marginBottom: 0 }}>กระเป๋ากำไร</p>
+                    <Header
+                      size="large"
+                      style={{ color: "#fff", marginTop: 0 }}
+                    >
+                      <CountUp
+                        end={botSetting.profit_wallet}
+                        separator=","
+                        decimals={2}
+                      />
+                    </Header>
+                  </div>
+                </>
+              )}
+            </div>
+            <div style={{ marginBottom: 24 }}>
+              {!botSetting.id && (
+                <Button
+                  color="blue"
+                  icon
+                  labelPosition="left"
+                  onClick={create}
+                  loading={isLoading}
+                >
+                  สร้าง
+                  <Icon name="save" />
+                </Button>
+              )}
+              {botSetting.status === 2 && (
+                <Button
+                  color="teal"
+                  icon
+                  labelPosition="left"
+                  onClick={start}
+                  loading={isLoading}
+                >
+                  เริ่ม
+                  <Icon name="play" />
+                </Button>
+              )}
+              {botSetting.status === 1 && (
+                <Button
+                  color="yellow"
+                  icon
+                  labelPosition="left"
+                  onClick={pause}
+                  loading={isLoading}
+                >
+                  <Icon name="pause" />
+                  หยุด
+                </Button>
+              )}
+              {(botSetting.status === 1 || botSetting.status === 2) && (
+                <Button
+                  color="red"
+                  icon
+                  labelPosition="left"
+                  onClick={setIsShownConfirmStop}
+                  loading={isLoading}
+                >
+                  <Icon name="close" />
+                  ปิด
+                </Button>
+              )}
+            </div>
+            <div className="progress-info">
+              {botSetting.status === 1 || botSetting.status === 2 ? (
+                <>
+                  <div>
+                    {calculateLoss()}/{calculateLossTarget()} (
+                    {calculateLossProgressPercent()}%)
+                  </div>
+                  <div>
+                    {calculateProfit()}/{calculateProfitTarget()} (
+                    {calculateProfitProgressPercent()}%)
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>0/0 (0%)</div>
+                  <div>0/0 (0%)</div>
+                </>
+              )}
+            </div>
+            {botSetting.status === 1 || botSetting.status === 2 ? (
+              <div className="progress-container">
+                <div className="progress-item progress-item--negative">
+                  <Progress
+                    percent={calculateLossProgressPercent()}
+                    active
+                    color="red"
+                    size="small"
+                  />
+                </div>
+                <div className="progress-item progress-item--positive">
+                  <Progress
+                    percent={calculateProfitProgressPercent()}
+                    active
+                    color="teal"
+                    size="small"
+                  />
+                </div>
+              </div>
+            ) : (
+              <Progress percent={0} active color="teal" size="small" />
+            )}
+          </div>
+        )}
         {botSetting.id &&
           (botSetting.money_system === 3 || botSetting.money_system === 4) && (
             <Card fluid>
@@ -595,23 +638,24 @@ const BotInformation = () => {
                   </Card.Description>
                   <Card.Meta>{renderMoneySystem()}</Card.Meta>
                 </Card.Content>
-                {botSetting.id &&
-          (botSetting.money_system === 4) && (
-            <Card.Content extra>
-                  <Button
-                    color="teal"
-                    icon
-                    labelPosition="left"
-                    fluid
-                    loading={isLoading}
-                    onClick={() => setIsShownConfirmResetMoneySystem(true)}
-                    disabled={botSetting.status === 1 || botSetting.status === 3}
-                  >
-                    รีสตาร์ท
-                    <Icon name="undo" />
-                  </Button>
-                </Card.Content>
-          )}
+                {botSetting.id && botSetting.money_system === 4 && (
+                  <Card.Content extra>
+                    <Button
+                      color="teal"
+                      icon
+                      labelPosition="left"
+                      fluid
+                      loading={isLoading}
+                      onClick={() => setIsShownConfirmResetMoneySystem(true)}
+                      disabled={
+                        botSetting.status === 1 || botSetting.status === 3
+                      }
+                    >
+                      รีสตาร์ท
+                      <Icon name="undo" />
+                    </Button>
+                  </Card.Content>
+                )}
               </Card>
               <Card>
                 <Card.Content>
@@ -620,6 +664,16 @@ const BotInformation = () => {
                   </Card.Description>
                   <Card.Meta>
                     {numeral(botSetting.init_bet).format("0,0")}
+                  </Card.Meta>
+                </Card.Content>
+              </Card>
+              <Card>
+                <Card.Content>
+                  <Card.Description style={{ marginBottom: 8 }}>
+                    ถอนกำไรเข้ากระเป๋ากำไรและเริ่มเล่นใหม่
+                  </Card.Description>
+                  <Card.Meta>
+                    {botSetting.is_infinite ? "ใช่" : "ไม่ใช่"}
                   </Card.Meta>
                 </Card.Content>
               </Card>
