@@ -355,3 +355,7 @@ color: #9f3a38!important;
 .ui.checkbox label:hover, .ui.checkbox+label:hover {
   color: #fff;
 }
+
+.withdraw-label {
+  font-size: 1rem;
+}

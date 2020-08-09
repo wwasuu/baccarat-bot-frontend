@@ -396,7 +396,7 @@ const BotInformation = () => {
             <div>
               <p style={{ marginBottom: 0 }}>กระเป๋าหลัก</p>
               <Header size="large" style={{ color: "#fff", marginTop: 0 }}>
-                <CountUp end={wallet.all_wallet} separator="," decimals={2} />
+                <CountUp end={wallet.all_wallet} separator="," decimals={2} /> <div className="withdraw-label">ถอน 0 ครั้ง</div>
               </Header>
             </div>
 
