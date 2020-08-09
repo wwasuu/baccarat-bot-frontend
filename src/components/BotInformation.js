@@ -70,6 +70,7 @@ const BotInformation = () => {
       console.log(data)
       if(data.action === "bet_result"){
         setPlayData(data.playData)
+        setBotData(data.botObj)
       }else if(data.action === "restart_result"){
         if(data.data.success){
           setPlayData(data.data.data.playData)
@@ -82,6 +83,18 @@ const BotInformation = () => {
   useEffect(() => {
     getUserBot();
   }, [auth.isLoggedIn]);
+
+  async function setBotData(data){
+    console.log(data)
+    dispatch(
+      bot_setting_init({
+        ...botSetting,
+        is_infinite: data.is_infinite,
+        profit_wallet: data.profit_wallet,
+        deposite_count: data.deposite_count
+      })
+    );
+  }
 
   async function getUserBotTransaction() {
     let bot_id = auth.bot_id;
@@ -263,8 +276,8 @@ const BotInformation = () => {
   }
 
   function calculateProfit() {
-    if (wallet.play_wallet <= botSetting.init_wallet) return 0;
-    return numeral(wallet.play_wallet - botSetting.init_wallet).format("0,0");
+    if (wallet.play_wallet <= botSetting.init_wallet + botSetting.profit_wallet) return 0;
+    return numeral(wallet.play_wallet - botSetting.init_wallet - botSetting.profit_wallet).format("0,0");
   }
 
   function calculateProfitTarget() {
@@ -274,8 +287,8 @@ const BotInformation = () => {
   }
 
   function calculateLoss() {
-    if (wallet.play_wallet > botSetting.init_wallet) return 0;
-    return numeral(Math.abs(wallet.play_wallet - botSetting.init_wallet)).format("0,0");
+    if (wallet.play_wallet > botSetting.init_wallet + botSetting.profit_wallet) return 0;
+    return numeral(Math.abs(wallet.play_wallet - botSetting.init_wallet - botSetting.profit_wallet)).format("0,0");
   }
 
   function calculateLossTarget() {
@@ -285,16 +298,16 @@ const BotInformation = () => {
   }
 
   function calculateProfitProgressPercent() {
-    if (wallet.play_wallet < botSetting.init_wallet) return 0;
+    if (wallet.play_wallet < botSetting.init_wallet + botSetting.profit_wallet) return 0;
     const target = botSetting.profit_threshold - botSetting.init_wallet;
-    const current = wallet.play_wallet - botSetting.init_wallet;
+    const current = wallet.play_wallet - botSetting.init_wallet - botSetting.profit_wallet;
     return Math.round((100 * current) / target);
   }
 
   function calculateLossProgressPercent() {
-    if (wallet.play_wallet > botSetting.init_wallet) return 0;
+    if (wallet.play_wallet > botSetting.init_wallet + botSetting.profit_wallet) return 0;
     const target = botSetting.init_wallet - botSetting.loss_threshold;
-    const current = botSetting.init_wallet - wallet.play_wallet;
+    const current = wallet.play_wallet - botSetting.init_wallet - botSetting.profit_wallet;
     return Math.round((100 * current) / target);
   }
 
@@ -433,14 +446,14 @@ const BotInformation = () => {
             <div>
               <p style={{ marginBottom: 0 }}>กระเป๋าลงทุน</p>
               <Header size="large" style={{ color: "#fff", marginTop: 0 }}>
-                <CountUp end={wallet.play_wallet} separator="," decimals={2} />
+                <CountUp end={wallet.play_wallet - botSetting.profit_wallet} separator="," decimals={2} />
               </Header>
             </div>
             <div>
               <p style={{ marginBottom: 0 }}>กระเป๋ากำไร</p>
               <Header size="large" style={{ color: "#fff", marginTop: 0 }}>
                 <CountUp
-                  end={wallet.profit_wallet}
+                  end={botSetting.profit_wallet}
                   separator=","
                   decimals={2}
                 />
