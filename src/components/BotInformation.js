@@ -91,7 +91,8 @@ const BotInformation = () => {
         ...botSetting,
         is_infinite: data.is_infinite,
         profit_wallet: data.profit_wallet,
-        deposite_count: data.deposite_count
+        deposite_count: data.deposite_count,
+        status: data.status
       })
     );
   }
@@ -301,6 +302,7 @@ const BotInformation = () => {
     if (wallet.play_wallet < botSetting.init_wallet + botSetting.profit_wallet) return 0;
     const target = botSetting.profit_threshold - botSetting.init_wallet;
     const current = wallet.play_wallet - botSetting.init_wallet - botSetting.profit_wallet;
+    if((100 * current) / target < 1) return 0;
     return Math.round((100 * current) / target);
   }
 
@@ -439,7 +441,7 @@ const BotInformation = () => {
             <div>
               <p style={{ marginBottom: 0 }}>กระเป๋าหลัก</p>
               <Header size="large" style={{ color: "#fff", marginTop: 0 }}>
-                <CountUp end={wallet.all_wallet} separator="," decimals={2} /> <div className="withdraw-label">ถอน 0 ครั้ง</div>
+                <CountUp end={wallet.all_wallet} separator="," decimals={2} /> <div className="withdraw-label">ถอน {botSetting.deposite_count || 0} ครั้ง</div>
               </Header>
             </div>
 
