@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import CountUp from "react-countup";
 import { useDispatch, useSelector } from "react-redux";
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import {
   Button,
   Card,
@@ -13,18 +13,26 @@ import {
   Header,
   Icon,
   Modal,
-  Progress
+  Progress,
 } from "semantic-ui-react";
-import { BOT_URL, PAUSE_URL, START_URL, STOP_URL, USER_BOT_TRANSACTION_URL, USER_BOT_URL, WALLET_URL } from "../constants";
+import {
+  BOT_URL,
+  PAUSE_URL,
+  START_URL,
+  STOP_URL,
+  USER_BOT_TRANSACTION_URL,
+  USER_BOT_URL,
+  WALLET_URL,
+} from "../constants";
 import {
   auth_setbot,
-  balance_set,
+  wallet_set,
   bot_clear,
   bot_setting_clear,
   bot_setting_init,
   bot_setting_set,
   bot_transaction_set,
-  error_bot_setting_set
+  error_bot_setting_set,
 } from "../store";
 import { socket } from "../utils/socket";
 import BotGraph from "./BotGraphs";
@@ -40,11 +48,10 @@ function compare(a, b) {
 }
 
 const BotInformation = () => {
-  const location = useLocation();
   const history = useHistory();
   const auth = useSelector((state) => state.auth);
-  const balance = useSelector((state) => state.balance);
   const botSetting = useSelector((state) => state.botSetting);
+  const wallet = useSelector((state) => state.wallet);
   var botTransaction = useSelector((state) => state.botTransaction);
   const dispatch = useDispatch();
   const errorBotSetting = useSelector((state) => state.errorBotSetting);
@@ -83,10 +90,8 @@ const BotInformation = () => {
     }
     try {
       const {
-        data: { data, success },
-      } = await axios.get(
-        `${USER_BOT_TRANSACTION_URL}/${bot_id}`
-      );
+        data: { data },
+      } = await axios.get(`${USER_BOT_TRANSACTION_URL}/${bot_id}`);
       let transaction = [0];
       let newData = data.sort(compare);
       newData.forEach((element) => {
@@ -115,9 +120,7 @@ const BotInformation = () => {
         axios.get(`${WALLET_URL}/${id}`),
       ]);
       if (botData.success && botData.data.bot) {
-        dispatch(
-          balance_set(walletData.data.myWallet.MAIN_WALLET.chips.credit)
-        );
+        dispatch(wallet_set(walletData.data));
         dispatch(
           bot_setting_init({
             ...botData.data.bot,
@@ -141,11 +144,11 @@ const BotInformation = () => {
         data: { data, success },
       } = await axios.get(`${WALLET_URL}/${id}`);
       if (success) {
-        dispatch(balance_set(data.myWallet.MAIN_WALLET.chips.credit));
+        dispatch(wallet_set(data));
         dispatch(
           bot_setting_init({
             ...botSetting,
-            init_wallet: data.myWallet.MAIN_WALLET.chips.credit,
+            init_wallet: data.play_wallet,
           })
         );
       }
@@ -178,6 +181,7 @@ const BotInformation = () => {
         data: { data, success },
       } = await axios.post(BOT_URL, {
         ...botSetting,
+        is_infinite: true,
         username: auth.username,
       });
       if (success) {
@@ -259,8 +263,8 @@ const BotInformation = () => {
   }
 
   function calculateProfit() {
-    if (balance <= botSetting.init_wallet) return 0;
-    return numeral(balance - botSetting.init_wallet).format("0,0");
+    if (wallet.play_wallet <= botSetting.init_wallet) return 0;
+    return numeral(wallet.play_wallet - botSetting.init_wallet).format("0,0");
   }
 
   function calculateProfitTarget() {
@@ -270,8 +274,8 @@ const BotInformation = () => {
   }
 
   function calculateLoss() {
-    if (balance > botSetting.init_wallet) return 0;
-    return numeral(Math.abs(balance - botSetting.init_wallet)).format("0,0");
+    if (wallet.play_wallet > botSetting.init_wallet) return 0;
+    return numeral(Math.abs(wallet.play_wallet - botSetting.init_wallet)).format("0,0");
   }
 
   function calculateLossTarget() {
@@ -281,16 +285,16 @@ const BotInformation = () => {
   }
 
   function calculateProfitProgressPercent() {
-    if (balance < botSetting.init_wallet) return 0;
+    if (wallet.play_wallet < botSetting.init_wallet) return 0;
     const target = botSetting.profit_threshold - botSetting.init_wallet;
-    const current = balance - botSetting.init_wallet;
+    const current = wallet.play_wallet - botSetting.init_wallet;
     return Math.round((100 * current) / target);
   }
 
   function calculateLossProgressPercent() {
-    if (balance > botSetting.init_wallet) return 0;
+    if (wallet.play_wallet > botSetting.init_wallet) return 0;
     const target = botSetting.init_wallet - botSetting.loss_threshold;
-    const current = botSetting.init_wallet - balance;
+    const current = botSetting.init_wallet - wallet.play_wallet;
     return Math.round((100 * current) / target);
   }
 
@@ -418,10 +422,31 @@ const BotInformation = () => {
     <>
       <Container text fluid>
         <div className="bot-info-float">
-          <p style={{ marginBottom: 0 }}>เครดิต</p>
-          <Header size="huge" style={{ color: "#fff", marginTop: 0 }}>
-            <CountUp end={balance} separator="," decimals={2} />
-          </Header>
+          <div className="wallet-container">
+            <div>
+              <p style={{ marginBottom: 0 }}>กระเป๋าหลัก</p>
+              <Header size="large" style={{ color: "#fff", marginTop: 0 }}>
+                <CountUp end={wallet.all_wallet} separator="," decimals={2} />
+              </Header>
+            </div>
+
+            <div>
+              <p style={{ marginBottom: 0 }}>กระเป๋าลงทุน</p>
+              <Header size="large" style={{ color: "#fff", marginTop: 0 }}>
+                <CountUp end={wallet.play_wallet} separator="," decimals={2} />
+              </Header>
+            </div>
+            <div>
+              <p style={{ marginBottom: 0 }}>กระเป๋ากำไร</p>
+              <Header size="large" style={{ color: "#fff", marginTop: 0 }}>
+                <CountUp
+                  end={wallet.profit_wallet}
+                  separator=","
+                  decimals={2}
+                />
+              </Header>
+            </div>
+          </div>
           <div style={{ marginBottom: 24 }}>
             {!botSetting.id && (
               <Button

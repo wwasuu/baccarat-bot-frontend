@@ -31,13 +31,6 @@ const initialAuthState = {
   loading: false,
 };
 
-const balance_set = (payload) => ({
-  type: "BALANCE/SET",
-  payload,
-});
-
-const initialBalanceState = 0;
-
 const bot_setting_set = (payload) => ({
   type: "BOT_SETTING/SET",
   payload: payload,
@@ -113,33 +106,20 @@ const auth = (state = initialAuthState, action) => {
 const botSetting = (state = initialBotSettingState, action) => {
   switch (action.type) {
     case "BOT_SETTING/INIT":
-      state = {
+      return {
+        ...state,
         ...action.payload,
       };
-      break;
     case "BOT_SETTING/SET":
-      state = {
+      return {
+        ...state,
         ...action.payload,
       };
-      break;
     case "BOT_SETTING/CLEAR":
-      state = initialBotSettingState;
-      break;
+      return initialBotSettingState;
     default:
-      state = { ...state };
-      break;
+      return state;
   }
-  return state;
-};
-
-const balance = (state = initialBalanceState, action) => {
-  switch (action.type) {
-    case "BALANCE/SET":
-      return action.payload;
-    default:
-      return state
-  }
-
 };
 
 const initialBotTransaction = [];
@@ -155,7 +135,6 @@ const botTransaction = (state = initialBotTransaction, action) => {
       return action.payload;
     default:
       return state;
-      
   }
 };
 
@@ -181,12 +160,38 @@ const errorBotSetting = (state = initialErrorBotSetting, action) => {
   }
 };
 
+const initialWallet = {
+  profit_wallet: 0,
+  all_wallet: 0,
+  play_wallet: 0,
+};
+
+const wallet_set = (payload) => ({
+  type: "WALLET/SET",
+  payload: payload,
+});
+
+const wallet_clear = () => ({
+  type: "WALLET/CLEAR",
+});
+
+const wallet = (state = initialWallet, action) => {
+  switch (action.type) {
+    case "WALLET/SET":
+      return { ...state, ...action.payload };
+    case "WALLET/CLEAR":
+      return initialWallet;
+    default:
+      return state;
+  }
+};
+
 const rootReducer = combineReducers({
   auth,
   botSetting,
-  balance,
   botTransaction,
   errorBotSetting,
+  wallet,
 });
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
@@ -200,7 +205,6 @@ export {
   auth_loading,
   bot_setting_set,
   auth_logout,
-  balance_set,
   bot_setting_init,
   bot_transaction_set,
   auth_setbot,
@@ -208,4 +212,6 @@ export {
   error_bot_setting_set,
   error_bot_setting_clear,
   bot_clear,
+  wallet_set,
+  wallet_clear,
 };
