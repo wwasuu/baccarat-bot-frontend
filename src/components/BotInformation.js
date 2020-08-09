@@ -168,6 +168,7 @@ const BotInformation = () => {
         data: { data, success },
       } = await axios.post(BOT_URL, {
         ...botSetting,
+        is_infinite: true,
         username: auth.username,
       });
       if (success) {
