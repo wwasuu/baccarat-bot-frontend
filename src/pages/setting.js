@@ -1,5 +1,5 @@
 import cn from "classnames";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   Button,
@@ -10,6 +10,7 @@ import {
   Header,
   Segment,
   Divider,
+  Checkbox,
 } from "semantic-ui-react";
 import BotInformation from "../components/BotInformation";
 import Navbar from "../components/Navbar";
@@ -146,6 +147,14 @@ const Setting = () => {
       content,
       pointing: "below",
     };
+  }
+
+  function onChangeIsInfinite(e, v) {
+    console.log(v.checked)
+    bot_setting_set({
+      ...botSetting,
+      is_infinite: v.checked
+    })
   }
 
   return (
@@ -441,6 +450,17 @@ const Setting = () => {
                 />
               </Segment>
             </Container>
+
+            <Container text fluid>
+              <Form.Field>
+                <Checkbox
+                  onChange={onChangeIsInfinite}
+                  color="teal"
+                  label="ถอนกำไรเข้ากระเป๋ากำไรและเริ่มเล่นใหม่"
+                />
+              </Form.Field>
+            </Container>
+
             <Container text fluid>
               <Header as="h3" style={{ color: "#fff" }}>
                 กำหนดขาดทุนไม่เกิน
