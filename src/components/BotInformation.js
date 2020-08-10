@@ -51,7 +51,7 @@ const BotInformation = (props) => {
   const auth = useSelector((state) => state.auth);
   const botSetting = useSelector((state) => state.botSetting);
   const wallet = useSelector((state) => state.wallet);
-  var botTransaction = useSelector((state) => state.botTransaction);
+  const botTransaction = useSelector((state) => state.botTransaction);
   const dispatch = useDispatch();
   const errorBotSetting = useSelector((state) => state.errorBotSetting);
   const [
@@ -64,7 +64,6 @@ const BotInformation = (props) => {
   const [playData, setPlayData] = useState([]);
 
   useEffect(() => {
-    getUserBotTransaction();
     const room = `user${auth.id}`;
     socket.on(room, (data) => {
       console.log(data);
@@ -80,11 +79,14 @@ const BotInformation = (props) => {
   }, []);
 
   useEffect(() => {
+    getUserBotTransaction();
+  }, [botSetting.id])
+
+  useEffect(() => {
     getUserBot();
   }, [auth.isLoggedIn]);
 
   async function setBotData(data) {
-    console.log(data);
     dispatch(
       bot_setting_init({
         ...botSetting,
@@ -97,7 +99,7 @@ const BotInformation = (props) => {
   }
 
   async function getUserBotTransaction() {
-    let bot_id = botSetting.bot_id;
+    let bot_id = botSetting.id;
     if (!bot_id) {
       return;
     }
@@ -110,7 +112,6 @@ const BotInformation = (props) => {
       newData.forEach((element) => {
         transaction.push(element.wallet - element.bot.init_wallet);
       });
-
       dispatch(
         bot_transaction_set([
           {

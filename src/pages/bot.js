@@ -88,7 +88,7 @@ const Setting = () => {
   }
 
   async function getUserBotTransaction() {
-    let bot_id = botSetting.bot_id;
+    let bot_id = botSetting.id;
     if (!bot_id) {
       return;
     }
@@ -101,7 +101,6 @@ const Setting = () => {
       newData.forEach((element) => {
         transaction.push(element.wallet - element.bot.init_wallet);
       });
-      console.log(transaction);
 
       dispatch(
         bot_transaction_set([

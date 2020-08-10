@@ -56,6 +56,7 @@ const initialBotSettingState = {
   init_bet: 50,
   max_turn: 0,
   bot_type: 1,
+  id: undefined
 };
 
 const auth = (state = initialAuthState, action) => {
