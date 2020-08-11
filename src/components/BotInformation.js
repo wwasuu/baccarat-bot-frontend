@@ -201,7 +201,6 @@ const BotInformation = (props) => {
         data: { data, success },
       } = await axios.post(BOT_URL, {
         ...botSetting,
-        is_infinite: true,
         username: auth.username,
       });
       if (success) {
@@ -474,7 +473,7 @@ const BotInformation = (props) => {
                   )}
                 </Header>
               </div>
-              {botSetting.id && (
+              {/* {botSetting.id && (
                 <>
                   <div>
                     <p style={{ marginBottom: 0 }}>กระเป๋าลงทุน</p>
@@ -503,7 +502,7 @@ const BotInformation = (props) => {
                     </Header>
                   </div>
                 </>
-              )}
+              )} */}
             </div>
             <div style={{ marginBottom: 24 }}>
               {!botSetting.id && (
@@ -668,7 +667,7 @@ const BotInformation = (props) => {
                   </Card.Meta>
                 </Card.Content>
               </Card>
-              <Card>
+              {/* <Card>
                 <Card.Content>
                   <Card.Description style={{ marginBottom: 8 }}>
                     ถอนกำไรเข้ากระเป๋ากำไรและเริ่มเล่นใหม่
@@ -677,7 +676,7 @@ const BotInformation = (props) => {
                     {botSetting.is_infinite ? "ใช่" : "ไม่ใช่"}
                   </Card.Meta>
                 </Card.Content>
-              </Card>
+              </Card> */}
               <Card>
                 <Card.Content>
                   <Card.Description style={{ marginBottom: 8 }}>
