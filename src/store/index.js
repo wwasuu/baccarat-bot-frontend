@@ -120,6 +120,7 @@ const botSetting = (state = initialBotSettingState, action) => {
     case "BOT_SETTING/CLEAR":
       return initialBotSettingState;
     default:
+      // console.log(state)
       return state;
   }
 };

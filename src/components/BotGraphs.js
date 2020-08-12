@@ -98,12 +98,13 @@ export default function BotGrapj() {
         },
         stroke: {
           curve: "smooth",
-          width: 0,
+          width: 1.5,
+          colors: ["#fa3f68", "#52ffd7"],
         },
         grid: {
           show: false,
         },
-        colors: ["#de1245", "#00b5ad"],
+        colors: ["#bb2e59", "#00b5ad"],
         xaxis: {
           labels: {
             show: false,
@@ -131,6 +132,16 @@ export default function BotGrapj() {
         },
         fill: {
           type: "gradient",
+          gradient: {
+            type: "vertical",
+            shadeIntensity: 0,
+            gradientToColors: undefined, // optional, if not defined - uses the shades of same color in series
+            inverseColors: true,
+            opacityFrom: 1,
+            opacityTo: 1,
+            stops: [0, 50, 100],
+            colorStops: []
+          }
         },
         legend: {
           show: false,
@@ -155,8 +166,9 @@ export default function BotGrapj() {
           enabled: false,
         },
         stroke: {
+          colors: ["#52ffd7", "#de1245", "#1226db"],
           curve: "smooth",
-          width: 0,
+          width: 1.5,
         },
         grid: {
           show: false,
@@ -189,6 +201,16 @@ export default function BotGrapj() {
         },
         fill: {
           type: "gradient",
+          gradient: {
+            type: "vertical",
+            shadeIntensity: 0,
+            gradientToColors: undefined, // optional, if not defined - uses the shades of same color in series
+            inverseColors: true,
+            opacityFrom: 0.6,
+            opacityTo: 0.6,
+            stops: [0, 50, 100],
+            colorStops: []
+          }
         },
         legend: {
           show: true,
@@ -454,7 +476,7 @@ export default function BotGrapj() {
           type="area"
           options={getOption()}
           series={showGraph()}
-          height="240"
+          height="280"
         />
       </Card>
     </>

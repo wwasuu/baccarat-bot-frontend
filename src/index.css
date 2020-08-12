@@ -380,6 +380,17 @@ color: #9f3a38!important;
     padding: 20px 40px 0 40px;
     box-shadow: rgba(0, 0, 0, 0.2) 0px 1px 6px 2px;
   }
+
+  .bot-info-float-collapse {
+    position: fixed;
+    top: 78px;
+    left: -8px;
+    width: 100%;
+    background-color: #212121;
+    z-index: 10;
+    /* padding: 20px 40px 0 40px; */
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 1px 6px 2px;
+  }
   .content-container-c-float-a {
     margin-top: 332px !important;
   }
