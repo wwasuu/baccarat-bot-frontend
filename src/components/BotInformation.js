@@ -359,8 +359,12 @@ const BotInformation = (props) => {
   }
 
   function renderLabouchere() {
+    console.log(playData)
     let str = "";
     for (let i = 0; i < playData.length; i++) {
+      if(playData[i] === undefined || playData[i] === null){
+        continue
+      }
       if (i !== playData.length - 1) {
         str += `${playData[i].toFixed(1)}, `;
       } else {
