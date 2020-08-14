@@ -395,7 +395,7 @@ const BotInformation = (props) => {
       },
       stroke: {
         curve: "smooth",
-        width: 3,
+        width: 1,
       },
       grid: {
         show: false,
