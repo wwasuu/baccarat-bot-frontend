@@ -181,8 +181,8 @@ const Setting = () => {
                 ) : (
                   <>
                     <Card header={"วิเคราะห์"} description={"โต๊ะน่าเล่น"} />
-                    <Card header="วิเคราะห์" description="การแทง" />
                     <Card header="วิเคราะห์" description="โอกาสทำกำไร" />
+                    <Card header="วิเคราะห์" description="การแทง" />
                   </>
                 )}
               </Card.Group>
