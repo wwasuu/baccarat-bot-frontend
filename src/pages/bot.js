@@ -46,10 +46,10 @@ const Setting = () => {
       } else if (data.action === "bet_result") {
         getWallet()
         if (data.isStop) {
-          dispatch(bot_setting_clear());
-          setTimeout(() => {
-            history.push("/setting");
-          }, 1000);
+          // dispatch(bot_setting_clear());
+          // setTimeout(() => {
+          //   history.push("/setting");
+          // }, 1000);
         } else {
           setBet({});
           getUserTransaction();

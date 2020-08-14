@@ -374,7 +374,7 @@ export default function BotGrapj() {
       });
       setBankerGraph({ multi: multiGraph, single: singleGraph });
     } catch (error) {
-      console.log("error while call getBotTransaction()", error);
+      console.log("BotGraphs Component | Error while call getBotTransaction()", error);
     }
     try {
       const {
@@ -430,7 +430,7 @@ export default function BotGrapj() {
       });
       setPlayerGraph({ multi: multiGraph, single: singleGraph });
     } catch (error) {
-      console.log("error while call getBotTransaction()", error);
+      console.log("BotGraphs Component | Error while call getBotTransaction()", error);
     }
   }
 
