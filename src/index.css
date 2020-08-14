@@ -437,10 +437,18 @@ color: #9f3a38!important;
   color: #00b5ad;
 }
 
+.loss {
+  color: #bb2e59;
+}
+
 .apexcharts-tooltip {
   border-width: 0 !important;
 }
 
 .apexcharts-xaxistooltip {
   display: none !important;
+}
+
+.capitalize {
+  text-transform: capitalize;
 }

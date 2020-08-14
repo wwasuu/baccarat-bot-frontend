@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import CountUp from "react-countup";
 import { useDispatch, useSelector } from "react-redux";
+import moment from "moment";
+import _ from "lodash";
 import { useHistory } from "react-router-dom";
 import {
   Button,
@@ -36,23 +38,13 @@ import {
 import { socket } from "../utils/socket";
 import BotGraph from "./BotGraphs";
 
-function compare(a, b) {
-  if (a.id < b.id) {
-    return -1;
-  }
-  if (a.id > b.id) {
-    return 1;
-  }
-  return 0;
-}
-
 const BotInformation = (props) => {
   const history = useHistory();
   const auth = useSelector((state) => state.auth);
   const botSetting = useSelector((state) => state.botSetting);
   const wallet = useSelector((state) => state.wallet);
   const botTransaction = useSelector((state) => state.botTransaction);
-  const [rawData, setRawData] = useState([])
+  const [rawData, setRawData] = useState([]);
   const dispatch = useDispatch();
   const errorBotSetting = useSelector((state) => state.errorBotSetting);
   const [
@@ -67,7 +59,6 @@ const BotInformation = (props) => {
   useEffect(() => {
     const room = `user${auth.id}`;
     socket.on(room, (data) => {
-      console.log(data);
       if (data.action === "bet_result") {
         setPlayData(data.playData);
         setBotData(data.botObj);
@@ -81,7 +72,7 @@ const BotInformation = (props) => {
 
   useEffect(() => {
     getUserBotTransaction();
-  }, [botSetting.id])
+  }, [botSetting.id]);
 
   useEffect(() => {
     getUserBot();
@@ -107,13 +98,17 @@ const BotInformation = (props) => {
       const {
         data: { data },
       } = await axios.get(`${USER_BOT_TRANSACTION_URL}/${bot_id}`);
-      let transaction = [{x: 0, y: 0, info: {}}];
-      let i = 1
-      let newData = data.sort(compare);
-      setRawData(newData)
+      let transaction = [{ x: 0, y: 0, info: {} }];
+      let i = 1;
+      let newData = _.sortBy(data, ["id"], ["ASC"]);
+      setRawData(newData);
       newData.forEach((element) => {
-        transaction.push({ x: i, y: element.wallet - element.bot.init_wallet, info: element});
-        i++
+        transaction.push({
+          x: i,
+          y: element.wallet - element.bot.init_wallet,
+          info: element,
+        });
+        i++;
       });
       dispatch(
         bot_transaction_set([
@@ -200,7 +195,6 @@ const BotInformation = (props) => {
     }
     try {
       setIsLoading(true);
-      console.log(botSetting.is_infinite)
       const {
         data: { data, success },
       } = await axios.post(BOT_URL, {
@@ -363,11 +357,10 @@ const BotInformation = (props) => {
   }
 
   function renderLabouchere() {
-    console.log(playData)
     let str = "";
     for (let i = 0; i < playData.length; i++) {
-      if(playData[i] === undefined || playData[i] === null){
-        continue
+      if (playData[i] === undefined || playData[i] === null) {
+        continue;
       }
       if (i !== playData.length - 1) {
         str += `${playData[i].toFixed(1)}, `;
@@ -375,7 +368,6 @@ const BotInformation = (props) => {
         str += `${playData[i].toFixed(1)}`;
       }
     }
-    // return playData.join(', ')
     return str;
   }
 
@@ -434,7 +426,7 @@ const BotInformation = (props) => {
         show: false,
       },
       fill: {
-        type: 'gradient',
+        type: "gradient",
         gradient: {
           type: "vertical",
           shadeIntensity: 0.5,
@@ -443,8 +435,8 @@ const BotInformation = (props) => {
           opacityFrom: 1,
           opacityTo: 1,
           stops: [0, 50, 100],
-          colorStops: []
-        }
+          colorStops: [],
+        },
       },
       title: {
         text: "กราฟรายได้",
@@ -454,35 +446,75 @@ const BotInformation = (props) => {
         },
       },
       tooltip: {
-        custom: function({series, seriesIndex, dataPointIndex, w}) {
+        custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+          // if(dataPointIndex != 0){
+          //   var pad = "00";
+          //   var date = new Date(rawData[dataPointIndex-1].createdAt);
+          //   var h = (pad + date.getHours()).slice(-pad.length);
+          //   var m = (pad + date.getMinutes()).slice(-pad.length);
+          //   var s = (pad + date.getSeconds()).slice(-pad.length);
+          //   if(series[seriesIndex][dataPointIndex] >= 0){
+          //     return '<div class="arrow_box">' +
+          //     '<span>' + 'เวลา : ' + `${h}:${m}:${s}` + '</span><br/>' +
+          //     '<span>' + 'โต๊ะ : ' + rawData[dataPointIndex-1].bot_transaction.table_title + '</span><br/>' +
+          //     '<span>' + 'เกมที่ : ' + `${rawData[dataPointIndex-1].bot_transaction.shoe}-${rawData[dataPointIndex-1].bot_transaction.round}` + '</span><br/>' +
+          //     '<span>' + 'กำไร : ' + series[seriesIndex][dataPointIndex] + ' บาท </span>' +
+          //     '</div>'
+          //   }else{
+          //     return '<div class="arrow_box">' +
+          //     '<span>' + 'เวลา : ' + `${h}:${m}:${s}` + '</span><br/>' +
+          //     '<span>' + 'โต๊ะ : ' + rawData[dataPointIndex-1].bot_transaction.table_title + '</span><br/>' +
+          //     '<span>' + 'เกมที่ : ' + `${rawData[dataPointIndex-1].bot_transaction.shoe}-${rawData[dataPointIndex-1].bot_transaction.round}` + '</span><br/>' +
+          //     '<span style={{color: "red !important" }}>' + 'ขาดทุน : ' + series[seriesIndex][dataPointIndex] + ' บาท </span>' +
+          //     '</div>'
+          //   } 
+          // }
+          try {
+            if (dataPointIndex != 0) {
+              const date = moment(rawData[dataPointIndex - 1].createdAt).format(
+                "HH:mm:ss"
+              );
+              const room =
+                rawData[dataPointIndex - 1].bot_transaction.table_title;
+              const game = `${
+                rawData[dataPointIndex - 1].bot_transaction.shoe
+              }-${rawData[dataPointIndex - 1].bot_transaction.round}`;
+              const value = numeral(series[seriesIndex][dataPointIndex]).format(
+                "0,0"
+              );
 
-          
-          if(dataPointIndex != 0){
-            var pad = "00";
-            var date = new Date(rawData[dataPointIndex-1].createdAt);
-            var h = (pad + date.getHours()).slice(-pad.length);
-            var m = (pad + date.getMinutes()).slice(-pad.length);
-            var s = (pad + date.getSeconds()).slice(-pad.length);
-            console.log(rawData[dataPointIndex-1])
-            if(series[seriesIndex][dataPointIndex] >= 0){
-              return '<div class="arrow_box">' +
-              '<span>' + 'เวลา : ' + `${h}:${m}:${s}` + '</span><br/>' +
-              '<span>' + 'โต๊ะ : ' + rawData[dataPointIndex-1].bot_transaction.table_title + '</span><br/>' +
-              '<span>' + 'เกมที่ : ' + `${rawData[dataPointIndex-1].bot_transaction.shoe}-${rawData[dataPointIndex-1].bot_transaction.round}` + '</span><br/>' +
-              '<span>' + 'กำไร : ' + series[seriesIndex][dataPointIndex] + ' บาท </span>' +
-              '</div>'
-            }else{
-              return '<div class="arrow_box">' +
-              '<span>' + 'เวลา : ' + `${h}:${m}:${s}` + '</span><br/>' +
-              '<span>' + 'โต๊ะ : ' + rawData[dataPointIndex-1].bot_transaction.table_title + '</span><br/>' +
-              '<span>' + 'เกมที่ : ' + `${rawData[dataPointIndex-1].bot_transaction.shoe}-${rawData[dataPointIndex-1].bot_transaction.round}` + '</span><br/>' +
-              '<span style={{color: "red !important" }}>' + 'ขาดทุน : ' + series[seriesIndex][dataPointIndex] + ' บาท </span>' +
-              '</div>'
+              if (series[seriesIndex][dataPointIndex] >= 0) {
+                return `<div class="graph-tooltip">
+            <div class="title">เวลา:</div><div class="title">${date}
+            </div>
+            <div>ห้องที่:</div><div>${room}
+            </div>
+            <div>โต๊ะ:</div><div>${game}
+            </div>
+            <div>กำไร:</div><div><span class="profit">${value}</span> บาท
+            </div>
+            </div>`;
+              } else {
+                return `<div class="graph-tooltip">
+            <div class="title">เวลา:</div><div class="title">${date}
+            </div>
+            <div>โต๊ะ:</div><div>${room}
+            </div>
+            <div>เกมที่:</div><div>${game}
+            </div>
+            <div>ขาดทุน:</div><div><span class="loss">${value}</span> บาท
+            </div>
+            </div>`;
+              }
             }
-            
+          } catch (error) {
+            console.log(
+              "BotInfomation Component | Error while call Chart tooltip custom",
+              error
+            );
           }
-        }
-      }
+        },
+      },
     },
   };
 
@@ -497,11 +529,11 @@ const BotInformation = (props) => {
       <Container text fluid>
         {!props.isShownProgressBar && (
           <div className="bot-info-float-collapse">
-          <Icon
-            className="collapse-button collapse-button-hidden"
-            name="angle up"
-            onClick={() => props.setIsShownProgressBar(true)}
-          />
+            <Icon
+              className="collapse-button collapse-button-hidden"
+              name="angle up"
+              onClick={() => props.setIsShownProgressBar(true)}
+            />
           </div>
         )}
         {props.isShownProgressBar && (
@@ -518,7 +550,12 @@ const BotInformation = (props) => {
                   <CountUp end={wallet.all_wallet} separator="," decimals={2} />
                   {botSetting.id && (
                     <div className="withdraw-label">
-                      ถอน {botSetting.deposite_count || 0} ครั้ง({botSetting.profit_wallet || 0} บาท)
+                      ถอน{" "}
+                      {numeral(botSetting.deposite_count).format("0,0") || 0}{" "}
+                      ครั้ง(
+                      {numeral(botSetting.profit_wallet).format("0,0") ||
+                        0}{" "}
+                      บาท)
                     </div>
                   )}
                 </Header>

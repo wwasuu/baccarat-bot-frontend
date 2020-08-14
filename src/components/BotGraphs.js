@@ -7,16 +7,6 @@ import _ from "lodash";
 import { socket } from "../utils/socket";
 import { BOT_TRANSACTION_URL } from "../constants";
 
-function compare(a, b) {
-  if (a.id < b.id) {
-    return -1;
-  }
-  if (a.id > b.id) {
-    return 1;
-  }
-  return 0;
-}
-
 export default function BotGrapj() {
   const [betSide, setBetSide] = useState(["DEFAULT"]);
   const [defaultGraph, setDefaultGraph] = useState({
@@ -85,7 +75,6 @@ export default function BotGrapj() {
   function subscribeBot() {
     const room = "all";
     socket.on(room, (data) => {
-      // console.log(data);
       getBotTransaction();
     });
   }
@@ -118,10 +107,12 @@ export default function BotGrapj() {
       setBankerGraph({
         multi: formatDataB.multiGraph,
         single: formatDataB.singleGraph,
+        meta: formatDataB.meta,
       });
       setPlayerGraph({
         multi: formatDataP.multiGraph,
         single: formatDataP.singleGraph,
+        meta: formatDataP.meta,
       });
     } catch (error) {
       console.log("error while call getBotTransaction()", error);
@@ -177,29 +168,35 @@ export default function BotGrapj() {
       tooltip: {
         custom: function ({ series, seriesIndex, dataPointIndex, w }) {
           const seriesNames = w.globals.seriesNames;
-          const betSideKey = seriesNames[seriesIndex];
+          let betSideKey = seriesNames[seriesIndex];
+          let graphName = ""
           let betSideMeta = [];
           switch (betSideKey) {
             case "PLAYER Only":
+              graphName = "Player Only"
               betSideMeta = playerGraph.meta;
               break;
             case "BANKER Only":
+              graphName = "Banker Only"
               betSideMeta = bankerGraph.meta;
               break;
             default:
+              graphName = "Player/Banker"
               betSideMeta = defaultGraph.meta;
           }
-          const date = moment(betSideMeta[dataPointIndex].createdAt).format("HH:mm:ss")
-          const room = betSideMeta[dataPointIndex].table_title
-          const game = betSideMeta[dataPointIndex].round
-          const bet = betSideMeta[dataPointIndex].bet
+          const date = moment(betSideMeta[dataPointIndex]?.createdAt ?? new Date()).format("HH:mm:ss")
+          const room = betSideMeta[dataPointIndex]?.table_title ?? ""
+          const game = `${betSideMeta[dataPointIndex]?.shoe ?? ""}-${betSideMeta[dataPointIndex]?.round ?? ""}`
+          const bet = betSideMeta[dataPointIndex]?.bet === "PLAYER" ? "Player" : "Banker" ?? ""
 
           return `<div class="graph-tooltip">
-          <div class="title">เวลา:</div><div class="title">${date}
+          <div class="title">กราฟ:</div><div class="title">${graphName}
+          </div>
+          <div>เวลา:</div><div>${date}
           </div>
           <div>ห้องที่:</div><div>${room}
           </div>
-          <div>ตาที่:</div><div>${game}
+          <div>โต๊ะ:</div><div>${game}
           </div>
           <div>แทง:</div><div>${bet}
           </div>
