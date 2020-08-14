@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import { Card } from "semantic-ui-react";
 import { socket } from "../utils/socket";
-import{ BOT_TRANSACTION_URL } from "../constants"
+import { BOT_TRANSACTION_URL } from "../constants";
 
 function compare(a, b) {
   if (a.id < b.id) {
@@ -17,7 +17,7 @@ function compare(a, b) {
 
 export default function BotGrapj() {
   const [betSide, setBetSide] = useState(["DEFAULT"]);
-  var [defaultGraph, setDefaultGraph] = useState({
+  const [defaultGraph, setDefaultGraph] = useState({
     multi: [
       {
         name: "PLAYER/BANKER",
@@ -35,7 +35,7 @@ export default function BotGrapj() {
       },
     ],
   });
-  var [bankerGraph, setBankerGraph] = useState({
+  const [bankerGraph, setBankerGraph] = useState({
     multi: [
       {
         name: "BANKER Only",
@@ -53,7 +53,7 @@ export default function BotGrapj() {
       },
     ],
   });
-  var [playerGraph, setPlayerGraph] = useState({
+  const [playerGraph, setPlayerGraph] = useState({
     multi: [
       {
         name: "PLAYER Only",
@@ -140,8 +140,8 @@ export default function BotGrapj() {
             opacityFrom: 1,
             opacityTo: 1,
             stops: [0, 50, 100],
-            colorStops: []
-          }
+            colorStops: [],
+          },
         },
         legend: {
           show: false,
@@ -154,7 +154,24 @@ export default function BotGrapj() {
           },
         },
         tooltip: {
-          enabled: false,
+          custom: function({series, seriesIndex, dataPointIndex, w}) {
+            console.log(defaultGraph)
+            console.log("seriesIndex", seriesIndex)
+            console.log("dataPointIndex", dataPointIndex)
+            return `<div class="graph-tooltip">
+            <div class="title">เวลา:</div><div class="title">${series[seriesIndex][dataPointIndex]}
+            </div>
+            <div>ห้องที่:</div><div>${series[seriesIndex][dataPointIndex]}
+            </div>
+            <div>ตาที่:</div><div>${series[seriesIndex][dataPointIndex]}
+            </div>
+            <div>กำไร:</div><div><span class="profit">${series[seriesIndex][dataPointIndex]}</span> บาท
+            </div>
+            </div>`
+          },
+          x: {
+            show: false,
+          },
         },
       };
     } else {
@@ -209,8 +226,8 @@ export default function BotGrapj() {
             opacityFrom: 0.6,
             opacityTo: 0.6,
             stops: [0, 50, 100],
-            colorStops: []
-          }
+            colorStops: [],
+          },
         },
         legend: {
           show: true,
@@ -227,7 +244,23 @@ export default function BotGrapj() {
           },
         },
         tooltip: {
-          enabled: false,
+          custom: function({series, seriesIndex, dataPointIndex, w}) {
+            console.log("seriesIndex", seriesIndex)
+            console.log("dataPointIndex", dataPointIndex)
+            return `<div class="graph-tooltip">
+            <div class="title">เวลา:</div><div class="title">${series[seriesIndex][dataPointIndex]}
+            </div>
+            <div>ห้องที่:</div><div>${series[seriesIndex][dataPointIndex]}
+            </div>
+            <div>ตาที่:</div><div>${series[seriesIndex][dataPointIndex]}
+            </div>
+            <div>กำไร:</div><div><span class="profit">${series[seriesIndex][dataPointIndex]}</span> บาท
+            </div>
+            </div>`
+          },
+          x: {
+            show: false,
+          },
         },
       };
     }
@@ -374,7 +407,10 @@ export default function BotGrapj() {
       });
       setBankerGraph({ multi: multiGraph, single: singleGraph });
     } catch (error) {
-      console.log("BotGraphs Component | Error while call getBotTransaction()", error);
+      console.log(
+        "BotGraphs Component | Error while call getBotTransaction()",
+        error
+      );
     }
     try {
       const {
@@ -430,7 +466,10 @@ export default function BotGrapj() {
       });
       setPlayerGraph({ multi: multiGraph, single: singleGraph });
     } catch (error) {
-      console.log("BotGraphs Component | Error while call getBotTransaction()", error);
+      console.log(
+        "BotGraphs Component | Error while call getBotTransaction()",
+        error
+      );
     }
   }
 

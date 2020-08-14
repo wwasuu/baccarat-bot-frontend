@@ -1,16 +1,32 @@
 import axios from "axios";
-import cn from "classnames"
+import cn from "classnames";
 import React, { useEffect, useState } from "react";
-import { Card, Container, Grid, Header } from "semantic-ui-react";
+import {
+  Card,
+  Container,
+  Grid,
+  Header,
+  Modal,
+  Button,
+} from "semantic-ui-react";
 import { useHistory } from "react-router-dom";
 import BotInformation from "../components/BotInformation";
 import Navbar from "../components/Navbar";
 import { socket } from "../utils/socket";
 import { useSelector, useDispatch } from "react-redux";
 import { Menu, Icon, Table } from "semantic-ui-react";
-import { bot_transaction_set, wallet_set, bot_setting_clear, bot_setting_set } from "../store";
+import {
+  bot_transaction_set,
+  wallet_set,
+  bot_setting_clear,
+  bot_setting_set,
+} from "../store";
 import BotGraph from "../components/BotGraphs";
-import { USER_TRANSACTION_URL, USER_BOT_TRANSACTION_URL, WALLET_URL } from "../constants";
+import {
+  USER_TRANSACTION_URL,
+  USER_BOT_TRANSACTION_URL,
+  WALLET_URL,
+} from "../constants";
 
 function compare(a, b) {
   if (a.id < b.id) {
@@ -28,7 +44,8 @@ const Setting = () => {
   const dispatch = useDispatch();
   const history = useHistory();
   const [tableData, setTableData] = useState([]);
-  const [isShownProgressBar, setIsShownProgressBar] = useState(true)
+  const [isShownProgressBar, setIsShownProgressBar] = useState(true);
+  const [isShownConfirmStop, setIsShownConfirmStop] = useState(false);
   const [bet, setBet] = useState({});
 
   useEffect(() => {
@@ -41,15 +58,20 @@ const Setting = () => {
     socket.on(room, (data) => {
       console.log(data);
       if (data.action === "bet_success") {
-        console.log(data)
-        setBet({ betVal: data.data.betVal, round: data.data.round, shoe: data.data.shoe, table_id: data.data.table.id, table_title: data.data.table.title, win_percent: data.data.win_percent, bot: data.data.bot });
+        console.log(data);
+        setBet({
+          betVal: data.data.betVal,
+          round: data.data.round,
+          shoe: data.data.shoe,
+          table_id: data.data.table.id,
+          table_title: data.data.table.title,
+          win_percent: data.data.win_percent,
+          bot: data.data.bot,
+        });
       } else if (data.action === "bet_result") {
-        getWallet()
+        getWallet();
         if (data.isStop) {
-          // dispatch(bot_setting_clear());
-          // setTimeout(() => {
-          //   history.push("/setting");
-          // }, 1000);
+          setIsShownConfirmStop(true);
         } else {
           setBet({});
           getUserTransaction();
@@ -58,14 +80,22 @@ const Setting = () => {
       }
     });
 
-    socket.on('bot', (data) => {
-      console.log(data)
-      if(data.action == 'play'){
-        setBet({ betVal: null, round: data.data.round, shoe: data.data.shoe, table_id: data.data.table.id, table_title: data.data.table.title, win_percent: data.data.win_percent, bot: data.data.bot });
+    socket.on("bot", (data) => {
+      console.log(data);
+      if (data.action == "play") {
+        setBet({
+          betVal: null,
+          round: data.data.round,
+          shoe: data.data.shoe,
+          table_id: data.data.table.id,
+          table_title: data.data.table.title,
+          win_percent: data.data.win_percent,
+          bot: data.data.bot,
+        });
       }
     });
 
-    socket.on('all', (data) => {
+    socket.on("all", (data) => {
       console.log(data);
       setBet({});
     });
@@ -128,7 +158,17 @@ const Setting = () => {
     }
   }
 
-  const botInfoContinerClass = cn("content-container-c", { "content-container-c-float-a": isShownProgressBar })
+  function close() {
+    dispatch(bot_setting_clear());
+    setTimeout(() => {
+      history.push("/setting");
+    }, 1000);
+    setIsShownConfirmStop(false);
+  }
+
+  const botInfoContinerClass = cn("content-container-c", {
+    "content-container-c-float-a": isShownProgressBar,
+  });
 
   return (
     <>
@@ -141,7 +181,10 @@ const Setting = () => {
             computer={8}
             className={botInfoContinerClass}
           >
-            <BotInformation isShownProgressBar={isShownProgressBar} setIsShownProgressBar={setIsShownProgressBar} />
+            <BotInformation
+              isShownProgressBar={isShownProgressBar}
+              setIsShownProgressBar={setIsShownProgressBar}
+            />
           </Grid.Column>
           <Grid.Column
             mobile={16}
@@ -165,9 +208,7 @@ const Setting = () => {
                   <>
                     <Card
                       header={bet.table_title}
-                      description={
-                        "เกม " + bet.shoe + "-" + bet.round
-                      }
+                      description={"เกม " + bet.shoe + "-" + bet.round}
                     />
                     <Card
                       header={bet.win_percent.toFixed(2) + "%"}
@@ -175,7 +216,9 @@ const Setting = () => {
                     />
                     <Card
                       header={bet.bot}
-                      description={bet.betVal==null?'ไม่ได้เล่น': bet.betVal + " บาท"}
+                      description={
+                        bet.betVal == null ? "ไม่ได้เล่น" : bet.betVal + " บาท"
+                      }
                     />
                   </>
                 ) : (
@@ -238,6 +281,21 @@ const Setting = () => {
           </Grid.Column>
         </Grid.Row>
       </Grid>
+      <Modal
+        basic
+        onClose={() => setIsShownConfirmStop(false)}
+        onOpen={() => setIsShownConfirmStop(true)}
+        open={isShownConfirmStop}
+        size="small"
+        closeOnDimmerClick={false}
+      >
+        <Header icon>การเล่นบอทของคุณสิ้นสุดแล้ว</Header>
+        <Modal.Actions>
+          <Button color="teal" onClick={close}>
+            <Icon name="checkmark" /> กลับไปหน้าตั้งค่า
+          </Button>
+        </Modal.Actions>
+      </Modal>
     </>
   );
 };
