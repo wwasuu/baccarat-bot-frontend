@@ -52,6 +52,7 @@ const BotInformation = (props) => {
   const botSetting = useSelector((state) => state.botSetting);
   const wallet = useSelector((state) => state.wallet);
   const botTransaction = useSelector((state) => state.botTransaction);
+  const [rawData, setRawData] = useState([])
   const dispatch = useDispatch();
   const errorBotSetting = useSelector((state) => state.errorBotSetting);
   const [
@@ -106,10 +107,13 @@ const BotInformation = (props) => {
       const {
         data: { data },
       } = await axios.get(`${USER_BOT_TRANSACTION_URL}/${bot_id}`);
-      let transaction = [0];
+      let transaction = [{x: 0, y: 0, info: {}}];
+      let i = 1
       let newData = data.sort(compare);
+      setRawData(newData)
       newData.forEach((element) => {
-        transaction.push(element.wallet - element.bot.init_wallet);
+        transaction.push({ x: i, y: element.wallet - element.bot.init_wallet, info: element});
+        i++
       });
       dispatch(
         bot_transaction_set([
@@ -352,7 +356,7 @@ const BotInformation = (props) => {
       case 3:
         return "การเดินเงินแบบลาบูแชร์";
       case 4:
-        return "การเดินเงินแบบ X sytem";
+        return "การเดินเงินแบบ X system";
       default:
         return "";
     }
@@ -406,7 +410,7 @@ const BotInformation = (props) => {
           show: false,
         },
         tooltip: {
-          show: false,
+          enabled: false,
         },
         crosshairs: {
           show: false,
@@ -420,7 +424,7 @@ const BotInformation = (props) => {
           show: false,
         },
         tooltip: {
-          show: false,
+          enabled: false,
         },
         crosshairs: {
           show: false,
@@ -450,8 +454,35 @@ const BotInformation = (props) => {
         },
       },
       tooltip: {
-        enabled: false,
-      },
+        custom: function({series, seriesIndex, dataPointIndex, w}) {
+
+          
+          if(dataPointIndex != 0){
+            var pad = "00";
+            var date = new Date(rawData[dataPointIndex-1].createdAt);
+            var h = (pad + date.getHours()).slice(-pad.length);
+            var m = (pad + date.getMinutes()).slice(-pad.length);
+            var s = (pad + date.getSeconds()).slice(-pad.length);
+            console.log(rawData[dataPointIndex-1])
+            if(series[seriesIndex][dataPointIndex] >= 0){
+              return '<div class="arrow_box">' +
+              '<span>' + 'เวลา : ' + `${h}:${m}:${s}` + '</span><br/>' +
+              '<span>' + 'โต๊ะ : ' + rawData[dataPointIndex-1].bot_transaction.table_title + '</span><br/>' +
+              '<span>' + 'เกมที่ : ' + `${rawData[dataPointIndex-1].bot_transaction.shoe}-${rawData[dataPointIndex-1].bot_transaction.round}` + '</span><br/>' +
+              '<span>' + 'กำไร : ' + series[seriesIndex][dataPointIndex] + ' บาท </span>' +
+              '</div>'
+            }else{
+              return '<div class="arrow_box">' +
+              '<span>' + 'เวลา : ' + `${h}:${m}:${s}` + '</span><br/>' +
+              '<span>' + 'โต๊ะ : ' + rawData[dataPointIndex-1].bot_transaction.table_title + '</span><br/>' +
+              '<span>' + 'เกมที่ : ' + `${rawData[dataPointIndex-1].bot_transaction.shoe}-${rawData[dataPointIndex-1].bot_transaction.round}` + '</span><br/>' +
+              '<span style={{color: "red !important" }}>' + 'ขาดทุน : ' + series[seriesIndex][dataPointIndex] + ' บาท </span>' +
+              '</div>'
+            }
+            
+          }
+        }
+      }
     },
   };
 
