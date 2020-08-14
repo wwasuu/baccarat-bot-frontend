@@ -41,7 +41,8 @@ const Setting = () => {
     socket.on(room, (data) => {
       console.log(data);
       if (data.action === "bet_success") {
-        setBet({ ...data.data, win_percent: data.win_percent });
+        console.log(data)
+        setBet({ betVal: data.data.betVal, round: data.data.round, shoe: data.data.shoe, table_id: data.data.table.id, table_title: data.data.table.title, win_percent: data.data.win_percent, bot: data.data.bot });
       } else if (data.action === "bet_result") {
         getWallet()
         if (data.isStop) {
@@ -55,6 +56,18 @@ const Setting = () => {
           getUserBotTransaction();
         }
       }
+    });
+
+    socket.on('bot', (data) => {
+      console.log(data)
+      if(data.action == 'play'){
+        setBet({ betVal: null, round: data.data.round, shoe: data.data.shoe, table_id: data.data.table.id, table_title: data.data.table.title, win_percent: data.data.win_percent, bot: data.data.bot });
+      }
+    });
+
+    socket.on('all', (data) => {
+      console.log(data);
+      setBet({});
     });
   }
 
@@ -151,9 +164,9 @@ const Setting = () => {
                 {Object.keys(bet).length !== 0 ? (
                   <>
                     <Card
-                      header={bet.table.title}
+                      header={bet.table_title}
                       description={
-                        "เกม " + bet.current.shoe + "-" + bet.current.round
+                        "เกม " + bet.shoe + "-" + bet.round
                       }
                     />
                     <Card
@@ -161,8 +174,8 @@ const Setting = () => {
                       description="โอกาสทำกำไร"
                     />
                     <Card
-                      header={bet.current.bot}
-                      description={bet.betVal + " บาท"}
+                      header={bet.bot}
+                      description={bet.betVal==null?'ไม่ได้เล่น': bet.betVal + " บาท"}
                     />
                   </>
                 ) : (

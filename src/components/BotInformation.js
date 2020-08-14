@@ -90,7 +90,6 @@ const BotInformation = (props) => {
     dispatch(
       bot_setting_init({
         ...botSetting,
-        is_infinite: data.is_infinite,
         profit_wallet: data.profit_wallet,
         deposite_count: data.deposite_count,
         status: data.status,
@@ -197,6 +196,7 @@ const BotInformation = (props) => {
     }
     try {
       setIsLoading(true);
+      console.log(botSetting.is_infinite)
       const {
         data: { data, success },
       } = await axios.post(BOT_URL, {
@@ -359,8 +359,12 @@ const BotInformation = (props) => {
   }
 
   function renderLabouchere() {
+    console.log(playData)
     let str = "";
     for (let i = 0; i < playData.length; i++) {
+      if(playData[i] === undefined || playData[i] === null){
+        continue
+      }
       if (i !== playData.length - 1) {
         str += `${playData[i].toFixed(1)}, `;
       } else {
@@ -391,7 +395,7 @@ const BotInformation = (props) => {
       },
       stroke: {
         curve: "smooth",
-        width: 0,
+        width: 3,
       },
       grid: {
         show: false,
@@ -425,6 +429,19 @@ const BotInformation = (props) => {
       legend: {
         show: false,
       },
+      fill: {
+        type: 'gradient',
+        gradient: {
+          type: "vertical",
+          shadeIntensity: 0.5,
+          gradientToColors: undefined, // optional, if not defined - uses the shades of same color in series
+          inverseColors: true,
+          opacityFrom: 1,
+          opacityTo: 1,
+          stops: [0, 50, 100],
+          colorStops: []
+        }
+      },
       title: {
         text: "กราฟรายได้",
         align: "left",
@@ -448,11 +465,13 @@ const BotInformation = (props) => {
       )}
       <Container text fluid>
         {!props.isShownProgressBar && (
+          <div className="bot-info-float-collapse">
           <Icon
             className="collapse-button collapse-button-hidden"
             name="angle up"
             onClick={() => props.setIsShownProgressBar(true)}
           />
+          </div>
         )}
         {props.isShownProgressBar && (
           <div className="bot-info-float">
@@ -468,7 +487,7 @@ const BotInformation = (props) => {
                   <CountUp end={wallet.all_wallet} separator="," decimals={2} />
                   {botSetting.id && (
                     <div className="withdraw-label">
-                      ถอน {botSetting.deposite_count || 0} ครั้ง
+                      ถอน {botSetting.deposite_count || 0} ครั้ง({botSetting.profit_wallet || 0} บาท)
                     </div>
                   )}
                 </Header>
@@ -538,7 +557,7 @@ const BotInformation = (props) => {
                   loading={isLoading}
                 >
                   <Icon name="pause" />
-                  หยุด
+                  พัก
                 </Button>
               )}
               {(botSetting.status === 1 || botSetting.status === 2) && (
@@ -667,7 +686,7 @@ const BotInformation = (props) => {
                   </Card.Meta>
                 </Card.Content>
               </Card>
-              {/* <Card>
+              <Card>
                 <Card.Content>
                   <Card.Description style={{ marginBottom: 8 }}>
                     ถอนกำไรเข้ากระเป๋ากำไรและเริ่มเล่นใหม่
@@ -676,7 +695,7 @@ const BotInformation = (props) => {
                     {botSetting.is_infinite ? "ใช่" : "ไม่ใช่"}
                   </Card.Meta>
                 </Card.Content>
-              </Card> */}
+              </Card>
               <Card>
                 <Card.Content>
                   <Card.Description style={{ marginBottom: 8 }}>

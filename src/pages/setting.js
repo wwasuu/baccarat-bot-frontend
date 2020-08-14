@@ -150,13 +150,14 @@ const Setting = () => {
     };
   }
 
-  // function onChangeIsInfinite(e, v) {
-  //   console.log(v.checked)
-  //   bot_setting_set({
-  //     ...botSetting,
-  //     is_infinite: v.checked
-  //   })
-  // }
+ function onChangeIsInfinite(e, v) {
+    console.log(v.checked)
+    let is_infinity = v.checked
+    dispatch(bot_setting_set({
+      ...botSetting,
+      is_infinite: is_infinity
+    }))
+  }
 
   const botInfoContinerClass = cn("content-container-c", { "content-container-c-float-b": isShownProgressBar })
 
@@ -453,7 +454,7 @@ const Setting = () => {
               </Segment>
             </Container>
 
-            {/* <Container text fluid>
+            <Container text fluid>
               <Form.Field>
                 <Checkbox
                   onChange={onChangeIsInfinite}
@@ -461,7 +462,7 @@ const Setting = () => {
                   label="ถอนกำไรเข้ากระเป๋ากำไรและเริ่มเล่นใหม่"
                 />
               </Form.Field>
-            </Container> */}
+            </Container>
 
             <Container text fluid>
               <Header as="h3" style={{ color: "#fff" }}>
