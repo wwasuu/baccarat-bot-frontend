@@ -451,7 +451,7 @@ color: #9f3a38!important;
 }
 
 .loss {
-  color: #a3060e;
+  color: #bb2e59;
 }
 
 .apexcharts-tooltip {
@@ -460,4 +460,16 @@ color: #9f3a38!important;
 
 .apexcharts-xaxistooltip {
   display: none !important;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+.txt-Player {
+  color: #1226db !important;
+}
+
+.txt-Banker {
+  color: #de1245 !important;
 }

@@ -19,7 +19,6 @@ import {
   bot_transaction_set,
   wallet_set,
   bot_setting_clear,
-  bot_setting_set,
 } from "../store";
 import BotGraph from "../components/BotGraphs";
 import {
@@ -56,9 +55,7 @@ const Setting = () => {
   function subscribeBot() {
     const room = `user${auth.id}`;
     socket.on(room, (data) => {
-      console.log(data);
       if (data.action === "bet_success") {
-        console.log(data);
         setBet({
           betVal: data.data.betVal,
           round: data.data.round,
@@ -81,7 +78,6 @@ const Setting = () => {
     });
 
     socket.on("bot", (data) => {
-      console.log(data);
       if (data.action == "play") {
         setBet({
           betVal: null,
@@ -95,8 +91,7 @@ const Setting = () => {
       }
     });
 
-    socket.on("all", (data) => {
-      console.log(data);
+    socket.on("all", (data) => { 
       setBet({});
     });
   }
@@ -129,7 +124,6 @@ const Setting = () => {
       console.log("error while call getWallet()", error);
     }
   }
-
   // async function getUserBotTransaction() {
   //   let bot_id = botSetting.id;
   //   if (!bot_id) {

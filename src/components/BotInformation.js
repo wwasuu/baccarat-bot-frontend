@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import CountUp from "react-countup";
 import { useDispatch, useSelector } from "react-redux";
+import moment from "moment";
+import _ from "lodash";
 import { useHistory } from "react-router-dom";
 import {
   Button,
@@ -36,23 +38,13 @@ import {
 import { socket } from "../utils/socket";
 import BotGraph from "./BotGraphs";
 
-function compare(a, b) {
-  if (a.id < b.id) {
-    return -1;
-  }
-  if (a.id > b.id) {
-    return 1;
-  }
-  return 0;
-}
-
 const BotInformation = (props) => {
   const history = useHistory();
   const auth = useSelector((state) => state.auth);
   const botSetting = useSelector((state) => state.botSetting);
   const wallet = useSelector((state) => state.wallet);
   const botTransaction = useSelector((state) => state.botTransaction);
-  const [rawData, setRawData] = useState([])
+  const [rawData, setRawData] = useState([]);
   const dispatch = useDispatch();
   const errorBotSetting = useSelector((state) => state.errorBotSetting);
   const [dataMap, setDataMap] = useState({})
@@ -68,7 +60,6 @@ const BotInformation = (props) => {
   useEffect(() => {
     const room = `user${auth.id}`;
     socket.on(room, (data) => {
-      console.log(data);
       if (data.action === "bet_result") {
         setPlayData(data.playData);
         setBotData(data.botObj);
@@ -82,7 +73,7 @@ const BotInformation = (props) => {
 
   useEffect(() => {
     getUserBotTransaction();
-  }, [botSetting.id])
+  }, [botSetting.id]);
 
   useEffect(() => {
     getUserBot();
@@ -115,7 +106,8 @@ const BotInformation = (props) => {
       let dataIndex = 0
       let indexMap = {}
       let previousValue = 0
-      let newData = data.sort(compare);
+      let newData = _.sortBy(data, ["id"], ["ASC"]);
+      // let newData = data.sort(compare);
       setRawData(newData)
       newData.forEach((element) => {
         transaction.push({ x: i, y: element.wallet - element.bot.init_wallet})
@@ -150,7 +142,9 @@ const BotInformation = (props) => {
         i++
         dataIndex++
       });
-      console.log(indexMap)
+
+      // let newData = _.sortBy(data, ["id"], ["ASC"]);
+      // console.log(indexMap)
       setDataMap(indexMap)
       // console.log(transaction)
       dispatch(
@@ -158,11 +152,7 @@ const BotInformation = (props) => {
           {
             name: "series1",
             data: [...transaction],
-          },
-          {
-            name: "series2",
-            data: [...transaction2],
-          },
+          }
         ])
       );
     } catch (error) {
@@ -242,7 +232,6 @@ const BotInformation = (props) => {
     }
     try {
       setIsLoading(true);
-      console.log(botSetting.is_infinite)
       const {
         data: { data, success },
       } = await axios.post(BOT_URL, {
@@ -405,11 +394,10 @@ const BotInformation = (props) => {
   }
 
   function renderLabouchere() {
-    // console.log(playData)
     let str = "";
     for (let i = 0; i < playData.length; i++) {
-      if(playData[i] === undefined || playData[i] === null){
-        continue
+      if (playData[i] === undefined || playData[i] === null) {
+        continue;
       }
       if (i !== playData.length - 1) {
         str += `${playData[i].toFixed(1)}, `;
@@ -417,7 +405,6 @@ const BotInformation = (props) => {
         str += `${playData[i].toFixed(1)}`;
       }
     }
-    // return playData.join(', ')
     return str;
   }
 
@@ -476,7 +463,7 @@ const BotInformation = (props) => {
         show: false,
       },
       fill: {
-        type: 'gradient',
+        type: "gradient",
         gradient: {
           type: "vertical",
           shadeIntensity: 0.5,
@@ -485,8 +472,8 @@ const BotInformation = (props) => {
           opacityFrom: 1,
           opacityTo: 1,
           stops: [0, 50, 100],
-          colorStops: []
-        }
+          colorStops: [],
+        },
       },
       title: {
         text: "กราฟรายได้",
@@ -564,11 +551,11 @@ const BotInformation = (props) => {
       <Container text fluid>
         {!props.isShownProgressBar && (
           <div className="bot-info-float-collapse">
-          <Icon
-            className="collapse-button collapse-button-hidden"
-            name="angle up"
-            onClick={() => props.setIsShownProgressBar(true)}
-          />
+            <Icon
+              className="collapse-button collapse-button-hidden"
+              name="angle up"
+              onClick={() => props.setIsShownProgressBar(true)}
+            />
           </div>
         )}
         {props.isShownProgressBar && (
@@ -585,7 +572,12 @@ const BotInformation = (props) => {
                   <CountUp end={wallet.all_wallet} separator="," decimals={2} />
                   {botSetting.id && (
                     <div className="withdraw-label">
-                      ถอน {botSetting.deposite_count || 0} ครั้ง({botSetting.profit_wallet || 0} บาท)
+                      ถอน{" "}
+                      {numeral(botSetting.deposite_count).format("0,0") || 0}{" "}
+                      ครั้ง(
+                      {numeral(botSetting.profit_wallet).format("0,0") ||
+                        0}{" "}
+                      บาท)
                     </div>
                   )}
                 </Header>

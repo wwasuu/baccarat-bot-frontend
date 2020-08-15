@@ -125,7 +125,6 @@ const Setting = () => {
     if (value > 100) {
       dispatch(error_bot_setting_set("LOSS_OVER_LIMIT"));
     }
-    console.log(value);
     dispatch(
       bot_setting_set({
         ...botSetting,
@@ -150,8 +149,7 @@ const Setting = () => {
     };
   }
 
- function onChangeIsInfinite(e, v) {
-    console.log(v.checked)
+ function onChangeIsInfinite(e, v) {    
     let is_infinity = v.checked
     dispatch(bot_setting_set({
       ...botSetting,
