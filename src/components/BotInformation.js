@@ -55,6 +55,7 @@ const BotInformation = (props) => {
   const [rawData, setRawData] = useState([])
   const dispatch = useDispatch();
   const errorBotSetting = useSelector((state) => state.errorBotSetting);
+  const [dataMap, setDataMap] = useState({})
   const [
     isShownConfirmResetMoneySystem,
     setIsShownConfirmResetMoneySystem,
@@ -107,19 +108,60 @@ const BotInformation = (props) => {
       const {
         data: { data },
       } = await axios.get(`${USER_BOT_TRANSACTION_URL}/${bot_id}`);
+      console.log(data)
       let transaction = [{x: 0, y: 0, info: {}}];
+      let transaction2 = [{x: 0, y: 0, info: {}}]
       let i = 1
+      let dataIndex = 0
+      let indexMap = {}
+      let previousValue = 0
       let newData = data.sort(compare);
       setRawData(newData)
       newData.forEach((element) => {
-        transaction.push({ x: i, y: element.wallet - element.bot.init_wallet, info: element});
+        transaction.push({ x: i, y: element.wallet - element.bot.init_wallet})
+        indexMap[i] = dataIndex
+        // if(element.wallet - element.bot.init_wallet == 0){
+        //   transaction.push({ x: i, y: 0});
+        //   transaction2.push({ x: i, y: 0});
+        //   indexMap[i] = dataIndex;
+        // }
+        // else if(element.wallet - element.bot.init_wallet >= 0){
+        //   if(previousValue < 0){
+        //     transaction.push({ x: i, y: 0});
+        //     transaction2.push({ x: i, y: 0});
+        //     i++
+        //   }
+
+        //   transaction.push({ x: i, y: element.wallet - element.bot.init_wallet});
+        //   transaction2.push({ x: i, y: 0});
+        //   indexMap[i] = dataIndex;
+        // }else{
+        //   if(previousValue > 0){
+        //     transaction.push({ x: i+0.5, y: 0});
+        //     transaction2.push({ x: i+0.5, y: 0});
+        //     i++
+        //   }
+
+        //   transaction2.push({ x: i, y: element.wallet - element.bot.init_wallet});
+        //   transaction.push({ x: i, y: 0});
+        //   indexMap[i] = dataIndex;
+        // }
+        // previousValue = element.wallet - element.bot.init_wallet
         i++
+        dataIndex++
       });
+      console.log(indexMap)
+      setDataMap(indexMap)
+      // console.log(transaction)
       dispatch(
         bot_transaction_set([
           {
             name: "series1",
             data: [...transaction],
+          },
+          {
+            name: "series2",
+            data: [...transaction2],
           },
         ])
       );
@@ -363,7 +405,7 @@ const BotInformation = (props) => {
   }
 
   function renderLabouchere() {
-    console.log(playData)
+    // console.log(playData)
     let str = "";
     for (let i = 0; i < playData.length; i++) {
       if(playData[i] === undefined || playData[i] === null){
@@ -404,7 +446,7 @@ const BotInformation = (props) => {
       grid: {
         show: false,
       },
-      colors: ["#00b5ad"],
+      colors: ["#00b5ad", "#bb2e59"],
       xaxis: {
         labels: {
           show: false,
@@ -455,34 +497,59 @@ const BotInformation = (props) => {
       },
       tooltip: {
         custom: function({series, seriesIndex, dataPointIndex, w}) {
-
+          let realIndex = Object.keys(dataMap).findIndex(item => item == dataPointIndex)
           
-          if(dataPointIndex != 0){
-            var pad = "00";
-            var date = new Date(rawData[dataPointIndex-1].createdAt);
-            var h = (pad + date.getHours()).slice(-pad.length);
-            var m = (pad + date.getMinutes()).slice(-pad.length);
-            var s = (pad + date.getSeconds()).slice(-pad.length);
-            console.log(rawData[dataPointIndex-1])
-            if(series[seriesIndex][dataPointIndex] >= 0){
-              return '<div class="arrow_box">' +
-              '<span>' + 'เวลา : ' + `${h}:${m}:${s}` + '</span><br/>' +
-              '<span>' + 'โต๊ะ : ' + rawData[dataPointIndex-1].bot_transaction.table_title + '</span><br/>' +
-              '<span>' + 'เกมที่ : ' + `${rawData[dataPointIndex-1].bot_transaction.shoe}-${rawData[dataPointIndex-1].bot_transaction.round}` + '</span><br/>' +
-              '<span>' + 'กำไร : ' + series[seriesIndex][dataPointIndex] + ' บาท </span>' +
-              '</div>'
-            }else{
-              return '<div class="arrow_box">' +
-              '<span>' + 'เวลา : ' + `${h}:${m}:${s}` + '</span><br/>' +
-              '<span>' + 'โต๊ะ : ' + rawData[dataPointIndex-1].bot_transaction.table_title + '</span><br/>' +
-              '<span>' + 'เกมที่ : ' + `${rawData[dataPointIndex-1].bot_transaction.shoe}-${rawData[dataPointIndex-1].bot_transaction.round}` + '</span><br/>' +
-              '<span style={{color: "red !important" }}>' + 'ขาดทุน : ' + series[seriesIndex][dataPointIndex] + ' บาท </span>' +
-              '</div>'
-            }
-            
+          if(realIndex == -1){
+            return '<div></div>'
           }
-        }
-      }
+          console.log(realIndex, dataMap[dataPointIndex])
+          let realData = dataMap[dataPointIndex]
+          
+
+          if(dataPointIndex != 0){
+            // console.log(defaultGraph)
+          // console.log("seriesIndex", seriesIndex)
+          // console.log("dataPointIndex", dataPointIndex)
+
+          var pad = "00";
+          var date = new Date(rawData[realData].createdAt);
+          var h = (pad + date.getHours()).slice(-pad.length);
+          var m = (pad + date.getMinutes()).slice(-pad.length);
+          var s = (pad + date.getSeconds()).slice(-pad.length);
+          if(series[seriesIndex][dataPointIndex] == 0){
+            return '<div></div>'
+          }else{
+            if(series[seriesIndex][dataPointIndex] >= 0){
+              return `<div class="graph-tooltip">
+              <div class="title">เวลา:</div><div class="title">${`${h}:${m}:${s}`}
+              </div>
+              <div>ห้องที่:</div><div>${rawData[realData].bot_transaction.table_title}
+              </div>
+              <div>ตาที่:</div><div>${`${rawData[realData].bot_transaction.shoe}-${rawData[realData].bot_transaction.round}`}
+              </div>
+              <div>กำไร:</div><div><span class="profit">${series[seriesIndex][dataPointIndex]}</span> บาท
+              </div>
+              </div>`
+            }else{
+              return `<div class="graph-tooltip-loss">
+              <div class="title">เวลา:</div><div class="title">${`${h}:${m}:${s}`}
+              </div>
+              <div>ห้องที่:</div><div>${rawData[realData].bot_transaction.table_title}
+              </div>
+              <div>ตาที่:</div><div>${`${rawData[realData].bot_transaction.shoe}-${rawData[realData].bot_transaction.round}`}
+              </div>
+              <div>กำไร:</div><div><span class="loss">${series[seriesIndex][dataPointIndex]}</span> บาท
+              </div>
+              </div>`
+            }
+          }
+          }
+          
+        },
+        x: {
+          show: false,
+        },
+      },
     },
   };
 
