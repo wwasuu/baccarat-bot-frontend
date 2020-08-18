@@ -12,4 +12,5 @@ export const BOT_URL = CONFIG.API_URL + "/bot"
 export const START_URL = CONFIG.API_URL + "/start"
 export const PAUSE_URL = CONFIG.API_URL + "/pause"
 export const STOP_URL = CONFIG.API_URL + "/stop"
+export const SET_OPPOSITE_URL = CONFIG.API_URL + "/bot/set_opposite"
 

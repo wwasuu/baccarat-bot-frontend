@@ -57,7 +57,8 @@ const initialBotSettingState = {
   max_turn: 0,
   bot_type: 1,
   id: undefined,
-  is_infinite: false
+  is_infinite: false,
+  is_opposite: false
 };
 
 const auth = (state = initialAuthState, action) => {

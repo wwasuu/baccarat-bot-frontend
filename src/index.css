@@ -86,8 +86,7 @@ code {
 }
 
 .ui.grid {
-  margin-top: 0;
-  margin-bottom: 0;
+  margin: 0;
 }
 
 .ui.table thead th {
@@ -296,8 +295,8 @@ color: #9f3a38!important;
 }
 
 .wallet-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  display: flex;
+  justify-content: space-between;
   margin-bottom: 8px;
 }
 
@@ -451,4 +450,8 @@ color: #9f3a38!important;
 
 .capitalize {
   text-transform: capitalize;
+}
+
+.meta {
+  color: #fff;
 }

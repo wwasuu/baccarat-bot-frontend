@@ -16,6 +16,7 @@ import {
   Icon,
   Modal,
   Progress,
+  Popup,
 } from "semantic-ui-react";
 import {
   BOT_URL,
@@ -25,6 +26,7 @@ import {
   USER_BOT_TRANSACTION_URL,
   USER_BOT_URL,
   WALLET_URL,
+  SET_OPPOSITE_URL
 } from "../constants";
 import {
   wallet_set,
@@ -37,6 +39,7 @@ import {
 } from "../store";
 import { socket } from "../utils/socket";
 import BotGraph from "./BotGraphs";
+import "../styles/app.scss";
 
 const BotInformation = (props) => {
   const history = useHistory();
@@ -467,7 +470,7 @@ const BotInformation = (props) => {
           //     '<span>' + 'เกมที่ : ' + `${rawData[dataPointIndex-1].bot_transaction.shoe}-${rawData[dataPointIndex-1].bot_transaction.round}` + '</span><br/>' +
           //     '<span style={{color: "red !important" }}>' + 'ขาดทุน : ' + series[seriesIndex][dataPointIndex] + ' บาท </span>' +
           //     '</div>'
-          //   } 
+          //   }
           // }
           try {
             if (dataPointIndex != 0) {
@@ -518,6 +521,47 @@ const BotInformation = (props) => {
     },
   };
 
+  async function betOpposite(isOpposite) {
+    try {
+      setIsLoading(true);
+        const {
+          data: { success },
+        } = await axios.post(SET_OPPOSITE_URL, {
+          username: auth.username,
+          is_opposite: isOpposite,
+        });
+        if (success) {
+          dispatch(
+            bot_setting_set({
+              ...botSetting,
+              is_opposite: isOpposite,
+            })
+          );
+        }
+    } catch (error) {
+      console.log(
+        "BotInfomation Component | Error while call betOpposite()",
+        error
+      );
+    }
+    setIsLoading(false);
+  }
+
+  function renderBetOppositeButton() {
+    if (botSetting.is_opposite) {
+      return (
+        <Button color="red" onClick={() => betOpposite(true)}>
+          <i className="fal fa-chart-line-down fa-lg" />
+        </Button>
+      );  
+    }
+    return (
+      <Button color="teal" onClick={() => betOpposite(true)}>
+        <i className="fal fa-chart-line fa-lg" />
+      </Button>
+    );
+  }
+
   return (
     <>
       {isLoadingWallet && (
@@ -549,16 +593,29 @@ const BotInformation = (props) => {
                 <Header size="large" style={{ color: "#fff", marginTop: 0 }}>
                   <CountUp end={wallet.all_wallet} separator="," decimals={2} />
                   {botSetting.id && (
-                    <div className="withdraw-label">
-                      ถอน{" "}
-                      {numeral(botSetting.deposite_count).format("0,0") || 0}{" "}
-                      ครั้ง(
-                      {numeral(botSetting.profit_wallet).format("0,0") ||
-                        0}{" "}
-                      บาท)
-                    </div>
+                    <>
+                      <div className="withdraw-label">
+                        ถอน{" "}
+                        {numeral(botSetting.deposite_count).format("0,0") || 0}{" "}
+                        ครั้ง (
+                        {numeral(botSetting.profit_wallet).format("0,0") ||
+                          0}{" "}บาท)
+                      </div>
+                      <div className="withdraw-label">
+                        เทรินโอเวอร์{" "}
+                        {numeral(botSetting.deposite_count).format("0,0") || 0}{" "}
+                        บาท
+                      </div>
+                    </>
                   )}
                 </Header>
+              </div>
+              <div>
+                <Popup
+                  position="left"
+                  content="เล่นตรงข้าม"
+                  trigger={renderBetOppositeButton()}
+                />
               </div>
               {/* {botSetting.id && (
                 <>
