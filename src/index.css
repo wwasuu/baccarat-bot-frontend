@@ -428,7 +428,20 @@ color: #9f3a38!important;
   border-radius: 6px;
 }
 
-.graph-tooltip > .title {
+.graph-tooltip-loss {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 8px;
+  color: #65676B;
+  background-color: #212121;
+  border: 2px solid #a3060e;
+  min-width: 128px;
+  padding: 8px 16px;
+  font-size: 0.95rem;
+  border-radius: 6px;
+}
+
+.graph-tooltip > .title, .graph-tooltip-loss > .title {
   color: #fff;
 }
 
@@ -452,6 +465,15 @@ color: #9f3a38!important;
   text-transform: capitalize;
 }
 
+<<<<<<< HEAD
 .meta {
   color: #fff;
+=======
+.txt-Player {
+  color: #1226db !important;
+}
+
+.txt-Banker {
+  color: #de1245 !important;
+>>>>>>> 157c982853eb725ce6b81f8bd9f6918db9afbc97
 }

@@ -72,7 +72,7 @@ const Setting = () => {
         } else {
           setBet({});
           getUserTransaction();
-          getUserBotTransaction();
+          // getUserBotTransaction();
         }
       }
     });
@@ -124,33 +124,33 @@ const Setting = () => {
       console.log("error while call getWallet()", error);
     }
   }
+  // async function getUserBotTransaction() {
+  //   let bot_id = botSetting.id;
+  //   if (!bot_id) {
+  //     return;
+  //   }
+  //   try {
+  //     const {
+  //       data: { data },
+  //     } = await axios.get(`${USER_BOT_TRANSACTION_URL}/${bot_id}`);
+  //     let transaction = [0];
+  //     let newData = data.sort(compare);
+  //     newData.forEach((element) => {
+  //       transaction.push(element.wallet - element.bot.init_wallet);
+  //     });
 
-  async function getUserBotTransaction() {
-    let bot_id = botSetting.id;
-    if (!bot_id) {
-      return;
-    }
-    try {
-      const {
-        data: { data },
-      } = await axios.get(`${USER_BOT_TRANSACTION_URL}/${bot_id}`);
-      let transaction = [0];
-      let newData = data.sort(compare);
-      newData.forEach((element) => {
-        transaction.push(element.wallet - element.bot.init_wallet);
-      });
-      dispatch(
-        bot_transaction_set([
-          {
-            name: "series1",
-            data: [...transaction],
-          },
-        ])
-      );
-    } catch (error) {
-      console.log("error while call getUserBotTransaction()", error);
-    }
-  }
+  //     dispatch(
+  //       bot_transaction_set([
+  //         {
+  //           name: "series1",
+  //           data: [...transaction],
+  //         },
+  //       ])
+  //     );
+  //   } catch (error) {
+  //     console.log("error while call getUserBotTransaction()", error);
+  //   }
+  // }
 
   function close() {
     dispatch(bot_setting_clear());

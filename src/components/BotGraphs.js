@@ -169,6 +169,7 @@ export default function BotGrapj() {
         custom: function ({ series, seriesIndex, dataPointIndex, w }) {
           const seriesNames = w.globals.seriesNames;
           let betSideKey = seriesNames[seriesIndex];
+          console.log(betSideKey)
           let graphName = ""
           let betSideMeta = [];
           switch (betSideKey) {
@@ -198,7 +199,7 @@ export default function BotGrapj() {
           </div>
           <div>โต๊ะ:</div><div>${game}
           </div>
-          <div>แทง:</div><div>${bet}
+          <div>แทง:</div><div class="txt-${bet}">${bet}
           </div>
           </div>`;
         },
@@ -308,11 +309,11 @@ export default function BotGrapj() {
 
     let singleGraph = [
       {
-        name: "POSITIVE PLAYER/BANKER",
+        name: "PLAYER/BANKER",
         data: [],
       },
       {
-        name: "NEGATIVE PLAYER/BANKER",
+        name: "PLAYER/BANKER",
         data: [],
       },
     ];
@@ -354,11 +355,11 @@ export default function BotGrapj() {
 
     let singleGraph = [
       {
-        name: `POSITIVE ${side} Only`,
+        name: `${side} Only`,
         data: [],
       },
       {
-        name: `NEGATIVE ${side} Only`,
+        name: `${side} Only`,
         data: [],
       },
     ];
