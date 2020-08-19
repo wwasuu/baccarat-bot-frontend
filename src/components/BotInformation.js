@@ -27,6 +27,7 @@ import {
   USER_BOT_URL,
   WALLET_URL,
   SET_OPPOSITE_URL,
+  BOT_INFO,
 } from "../constants";
 import {
   wallet_set,
@@ -59,10 +60,12 @@ const BotInformation = (props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingWallet, setIsLoadingWallet] = useState(true);
   const [playData, setPlayData] = useState([]);
+  const [turnover, setTurnOver] = useState(0)
 
   useEffect(() => {
     const room = `user${auth.id}`;
     socket.on(room, (data) => {
+    
       if (data.action === "bet_result") {
         setPlayData(data.playData);
         setBotData(data.botObj);
@@ -70,6 +73,13 @@ const BotInformation = (props) => {
         if (data.data.success) {
           setPlayData(data.data.data.playData);
         }
+      }else if (data.action === "info") {
+          // console.log(data)
+          setPlayData(data.playData);
+          setTurnOver(data.turnover)
+      }else if (data.action == 'bet_success'){
+        // console.log(data)
+          setTurnOver(data.data.turnover)
       }
     });
   }, []);
@@ -80,6 +90,7 @@ const BotInformation = (props) => {
 
   useEffect(() => {
     getUserBot();
+    getBotInfo()
   }, [auth.isLoggedIn]);
 
   async function setBotData(data) {
@@ -102,7 +113,7 @@ const BotInformation = (props) => {
       const {
         data: { data },
       } = await axios.get(`${USER_BOT_TRANSACTION_URL}/${bot_id}`);
-      console.log(data);
+      // console.log(data);
       let transaction = [{ x: 0, y: 0, info: {} }];
       let transaction2 = [{ x: 0, y: 0, info: {} }];
       let i = 1;
@@ -110,6 +121,7 @@ const BotInformation = (props) => {
       let indexMap = {};
       let previousValue = 0;
       let newData = _.sortBy(data, ["id"], ["ASC"]);
+      console.log(newData)
       // let newData = data.sort(compare);
       setRawData(newData);
       newData.forEach((element) => {
@@ -188,6 +200,20 @@ const BotInformation = (props) => {
     } catch (error) {
       setIsLoadingWallet(false);
       console.log("error while call getUserBot()", error);
+    }
+  }
+
+  async function getBotInfo() {
+    try {
+      if (!auth.isLoggedIn) return;
+      if (botSetting.bot_id) return;
+      setIsLoadingWallet(true);
+      const id = auth.id;
+      const [{ data: botData }] = await Promise.all([
+        axios.get(`${BOT_INFO}/${id}`),
+      ]);
+    } catch (error) {
+      console.log("error while call getBotInfo()", error);
     }
   }
 
@@ -494,7 +520,7 @@ const BotInformation = (props) => {
           if (realIndex == -1) {
             return "<div></div>";
           }
-          console.log(realIndex, dataMap[dataPointIndex]);
+          // console.log(realIndex, dataMap[dataPointIndex]);
           let realData = dataMap[dataPointIndex];
 
           if (dataPointIndex != 0) {
@@ -524,6 +550,9 @@ const BotInformation = (props) => {
                 series[seriesIndex][dataPointIndex]
               }</span> บาท
               </div>
+              <div>สวนบอท:</div><div><span>${
+                rawData[realData].user_bet == rawData[realData].bot_transaction.bet?'ไม่': 'ใช่'
+              }</span>
               </div>`;
               } else {
                 return `<div class="graph-tooltip-loss">
@@ -539,6 +568,9 @@ const BotInformation = (props) => {
                 series[seriesIndex][dataPointIndex]
               }</span> บาท
               </div>
+              <div>สวนบอท:</div><div><span>${
+                rawData[realData].user_bet == rawData[realData].bot_transaction.bet?'ไม่': 'ใช่'
+              }</span>
               </div>`;
               }
             }
@@ -580,13 +612,14 @@ const BotInformation = (props) => {
   function renderBetOppositeButton() {
     if (botSetting.is_opposite) {
       return (
-        <Button color="red" onClick={() => betOpposite(true)}>
+        <Button color="red" onClick={() => betOpposite(false)} disabled={botSetting.status != 2}>
           <i className="fal fa-chart-line-down fa-lg" />
         </Button>
+        
       );
     }
     return (
-      <Button color="teal" onClick={() => betOpposite(true)}>
+      <Button color="teal" onClick={() => betOpposite(true)} disabled={botSetting.status != 2}>
         <i className="fal fa-chart-line fa-lg" />
       </Button>
     );
@@ -629,12 +662,8 @@ const BotInformation = (props) => {
                         {numeral(botSetting.deposite_count).format("0,0") || 0}{" "}
                         ครั้ง (
                         {numeral(botSetting.profit_wallet).format("0,0") || 0}{" "}
-                        บาท)
-                      </div>
-                      <div className="withdraw-label">
-                        เทรินโอเวอร์{" "}
-                        {numeral(botSetting.deposite_count).format("0,0") || 0}{" "}
-                        บาท
+                        บาท) / เทรินโอเวอร์{"  "}
+                        {numeral(turnover).format("0,0") || 0}
                       </div>
                     </>
                   )}
@@ -643,7 +672,7 @@ const BotInformation = (props) => {
               <div>
                 <Popup
                   position="left"
-                  content="เล่นตรงข้าม"
+                  content={botSetting.is_opposite?"กดเพื่อเล่นตามบอท":"กดเพื่อเล่นสวนบอท"}
                   trigger={renderBetOppositeButton()}
                 />
               </div>

@@ -8,6 +8,7 @@ import {
   Header,
   Modal,
   Button,
+  Pagination,
 } from "semantic-ui-react";
 import { useHistory } from "react-router-dom";
 import BotInformation from "../components/BotInformation";
@@ -46,11 +47,22 @@ const Setting = () => {
   const [isShownProgressBar, setIsShownProgressBar] = useState(true);
   const [isShownConfirmStop, setIsShownConfirmStop] = useState(false);
   const [bet, setBet] = useState({});
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPage, setTotalPage] = useState(1)
+
+
 
   useEffect(() => {
-    getUserTransaction();
+    getUserTransaction(currentPage);
     subscribeBot();
   }, []);
+
+
+  function handlePaginationChange(e, { activePage }){
+    // console.log(activePage)
+    setCurrentPage(activePage)
+    getUserTransaction(activePage)
+  }
 
   function subscribeBot() {
     const room = `user${auth.id}`;
@@ -64,6 +76,7 @@ const Setting = () => {
           table_title: data.data.table.title,
           win_percent: data.data.win_percent,
           bot: data.data.bot,
+          user_bet: data.data.bet,
         });
       } else if (data.action === "bet_result") {
         getWallet();
@@ -71,8 +84,51 @@ const Setting = () => {
           setIsShownConfirmStop(true);
         } else {
           setBet({});
-          getUserTransaction();
+          getUserTransaction(currentPage);
           // getUserBotTransaction();
+        }
+      } else if (data.action === "info") {
+        if (data.isPlay == true && data.table != null && Object.keys(data.current).length > 0) {
+          if (data.currentBetData.shoe == data.current.shoe && data.currentBetData.round == data.current.round) {
+            setBet({
+              betVal: data.current.betVal,
+              round: data.currentBetData.round,
+              shoe: data.currentBetData.shoe,
+              table_id: data.currentBetData.table.id,
+              table_title: data.currentBetData.table.title,
+              win_percent: data.currentBetData.win_percent,
+              bot: data.currentBetData.bot,
+              user_bet: data.current.bet,
+            });
+          } else {
+            setBet({
+              betVal: null,
+              round: data.currentBetData.round,
+              shoe: data.currentBetData.shoe,
+              table_id: data.currentBetData.table.id,
+              table_title: data.currentBetData.table.title,
+              win_percent: data.currentBetData.win_percent,
+              bot: data.currentBetData.bot,
+              user_bet: null,
+            });
+          }
+
+        } else {
+          if(data.isPlay == true){
+            setBet({
+              betVal: null,
+              round: data.currentBetData.round,
+              shoe: data.currentBetData.shoe,
+              table_id: data.currentBetData.table.id,
+              table_title: data.currentBetData.table.title,
+              win_percent: data.currentBetData.win_percent,
+              bot: data.currentBetData.bot,
+              user_bet: null,
+            });
+          }else{
+            setBet({})
+          }
+         
         }
       }
     });
@@ -87,23 +143,27 @@ const Setting = () => {
           table_title: data.data.table.title,
           win_percent: data.data.win_percent,
           bot: data.data.bot,
+          user_bet: null,
         });
       }
     });
 
-    socket.on("all", (data) => { 
+    socket.on("all", (data) => {
       setBet({});
     });
   }
 
-  async function getUserTransaction() {
+  async function getUserTransaction(activePage) {
     let id = auth.id;
     if (!id) return;
     try {
-      let url = `${USER_TRANSACTION_URL}/${id}`;
+      let url = `${USER_TRANSACTION_URL}/${id}?page=${activePage}`;
       const {
         data: { data, success },
       } = await axios.get(url);
+      
+      // console.log(data)
+      setTotalPage(data.bets.lastPage)
       setTableData(data.bets.data);
     } catch (error) {
       console.log("error while call getBotTransaction()", error);
@@ -197,7 +257,7 @@ const Setting = () => {
               <Header as="h2" style={{ color: "#fff" }}>
                 iBotX
               </Header>
-              <Card.Group>
+              <Card.Group itemsPerRow={4} doubling={true}>
                 {Object.keys(bet).length !== 0 ? (
                   <>
                     <Card
@@ -210,18 +270,23 @@ const Setting = () => {
                     />
                     <Card
                       header={bet.bot}
+                      description="บอทวิเคราะห์"
+                    />
+                    <Card
+                      header={bet.betVal == null ? "ไม่ได้เล่น" : bet.user_bet}
                       description={
-                        bet.betVal == null ? "ไม่ได้เล่น" : bet.betVal + " บาท"
+                        bet.betVal == null ? "การเล่น" : bet.betVal + " บาท"
                       }
                     />
                   </>
                 ) : (
-                  <>
-                    <Card header={"วิเคราะห์"} description={"โต๊ะน่าเล่น"} />
-                    <Card header="วิเคราะห์" description="โอกาสทำกำไร" />
-                    <Card header="วิเคราะห์" description="การแทง" />
-                  </>
-                )}
+                    <>
+                      <Card header={"วิเคราะห์"} description={"โต๊ะน่าเล่น"} />
+                      <Card header="วิเคราะห์" description="โอกาสทำกำไร" />
+                      <Card header="วิเคราะห์" description="บอทวิเคราะห์" />
+                      <Card header="วิเคราะห์" description="การเล่น" />
+                    </>
+                  )}
               </Card.Group>
             </Container>
             <Container fluid>
@@ -255,18 +320,16 @@ const Setting = () => {
                 <Table.Footer>
                   <Table.Row>
                     <Table.HeaderCell colSpan="5">
-                      <Menu inverted floated="right" pagination>
-                        <Menu.Item as="a" icon>
-                          <Icon inverted name="chevron left" />
-                        </Menu.Item>
-                        <Menu.Item as="a">1</Menu.Item>
-                        <Menu.Item as="a">2</Menu.Item>
-                        <Menu.Item as="a">3</Menu.Item>
-                        <Menu.Item as="a">4</Menu.Item>
-                        <Menu.Item as="a" icon>
-                          <Icon inverted name="chevron right" />
-                        </Menu.Item>
-                      </Menu>
+                      <Pagination floated="right" inverted
+                        activePage={currentPage}
+                        ellipsisItem={{ content: <Icon name='ellipsis horizontal' />, icon: true }}
+                        firstItem={{ content: <Icon name='angle double left' />, icon: true }}
+                        lastItem={{ content: <Icon name='angle double right' />, icon: true }}
+                        prevItem={{ content: <Icon name='angle left' />, icon: true }}
+                        nextItem={{ content: <Icon name='angle right' />, icon: true }}
+                        onPageChange={handlePaginationChange}
+                        totalPages={totalPage}
+                      />
                     </Table.HeaderCell>
                   </Table.Row>
                 </Table.Footer>

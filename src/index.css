@@ -465,15 +465,15 @@ color: #9f3a38!important;
   text-transform: capitalize;
 }
 
-<<<<<<< HEAD
 .meta {
   color: #fff;
-=======
+}
+
 .txt-Player {
   color: #1226db !important;
 }
 
 .txt-Banker {
   color: #de1245 !important;
->>>>>>> 157c982853eb725ce6b81f8bd9f6918db9afbc97
+
 }

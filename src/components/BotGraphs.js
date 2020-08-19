@@ -169,7 +169,7 @@ export default function BotGrapj() {
         custom: function ({ series, seriesIndex, dataPointIndex, w }) {
           const seriesNames = w.globals.seriesNames;
           let betSideKey = seriesNames[seriesIndex];
-          console.log(betSideKey)
+          // console.log(betSideKey)
           let graphName = ""
           let betSideMeta = [];
           switch (betSideKey) {

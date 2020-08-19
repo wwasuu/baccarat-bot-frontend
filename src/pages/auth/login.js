@@ -215,7 +215,7 @@ const Login = () => {
             </Segment>
             <Form.Field className="text-center">
               คุณยังไม่มีบัญชีใช่ไหม?{" "}
-              <a href={REGISTER_URL}>สมัคร</a>
+              <a target="_blank" href={REGISTER_URL}>สมัคร</a>
             </Form.Field>
           </Form>
           <Statistic.Group
