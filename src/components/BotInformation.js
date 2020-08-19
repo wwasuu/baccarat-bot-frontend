@@ -94,12 +94,14 @@ const BotInformation = (props) => {
   }, [auth.isLoggedIn]);
 
   async function setBotData(data) {
+    console.log(data)
     dispatch(
       bot_setting_init({
         ...botSetting,
         profit_wallet: data.profit_wallet,
         deposite_count: data.deposite_count,
         status: data.status,
+        is_opposite: data.is_opposite
       })
     );
   }
