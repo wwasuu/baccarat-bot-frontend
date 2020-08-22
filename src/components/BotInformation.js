@@ -69,9 +69,11 @@ const BotInformation = (props) => {
   useEffect(() => {
     const room = `user${auth.id}`;
     socket.on(room, (data) => {
+      console.log(data)
       if (data.action === "bet_result") {
         setPlayData(data.playData);
         setBotData(data.botObj);
+        getUserBotTransaction();
       } else if (data.action === "restart_result") {
         if (data.data.success) {
           setPlayData(data.data.data.playData);
@@ -80,6 +82,18 @@ const BotInformation = (props) => {
         // console.log(data)
         setPlayData(data.playData);
         setTurnOver(data.turnover);
+        dispatch(
+          bot_setting_init({
+            ...botSetting,
+            profit_wallet: data.botObj.profit_wallet,
+            deposite_count: data.botObj.deposite_count,
+            status: data.botObj.status,
+            is_opposite: data.botObj.is_opposite,
+            bet_side: data.botObj.bet_side,
+            loss_threshold: data.botObj.loss_threshold,
+            loss_percent: data.botObj.loss_percent,
+          })
+        );
       } else if (data.action == "bet_success") {
         // console.log(data)
         setTurnOver(data.data.turnover);
@@ -105,6 +119,9 @@ const BotInformation = (props) => {
         deposite_count: data.deposite_count,
         status: data.status,
         is_opposite: data.is_opposite,
+        loss_threshold: data.loss_threshold,
+        loss_percent: data.loss_percent,
+        bet_side: data.bet_side
       })
     );
   }
@@ -657,9 +674,10 @@ const BotInformation = (props) => {
         dispatch(
           bot_setting_set({
             ...botSetting,
-            bet_side,
+            bet_side: bet_side,
           })
         );
+        setIsLoading(false);
       }
     } catch (error) {
       console.log(
@@ -890,6 +908,9 @@ const BotInformation = (props) => {
                       labelPosition="left"
                       fluid
                       loading={isLoading}
+                      disabled={
+                        botSetting.status === 1 || botSetting.status === 3
+                      }
                       onClick={() => setIsShownConfirmResetBetSide(true)}
                     >
                       เปลี่ยน
