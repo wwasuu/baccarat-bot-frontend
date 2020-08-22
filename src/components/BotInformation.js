@@ -28,6 +28,7 @@ import {
   WALLET_URL,
   SET_OPPOSITE_URL,
   BOT_INFO,
+  SET_BET_SIDE_URL,
 } from "../constants";
 import {
   wallet_set,
@@ -56,16 +57,18 @@ const BotInformation = (props) => {
     isShownConfirmResetMoneySystem,
     setIsShownConfirmResetMoneySystem,
   ] = useState(false);
+  const [isShownConfirmResetBetSide, setIsShownConfirmResetBetSide] = useState(
+    false
+  );
   const [isShownConfirmStop, setIsShownConfirmStop] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingWallet, setIsLoadingWallet] = useState(true);
   const [playData, setPlayData] = useState([]);
-  const [turnover, setTurnOver] = useState(0)
+  const [turnover, setTurnOver] = useState(0);
 
   useEffect(() => {
     const room = `user${auth.id}`;
     socket.on(room, (data) => {
-    
       if (data.action === "bet_result") {
         setPlayData(data.playData);
         setBotData(data.botObj);
@@ -73,13 +76,13 @@ const BotInformation = (props) => {
         if (data.data.success) {
           setPlayData(data.data.data.playData);
         }
-      }else if (data.action === "info") {
-          // console.log(data)
-          setPlayData(data.playData);
-          setTurnOver(data.turnover)
-      }else if (data.action == 'bet_success'){
+      } else if (data.action === "info") {
         // console.log(data)
-          setTurnOver(data.data.turnover)
+        setPlayData(data.playData);
+        setTurnOver(data.turnover);
+      } else if (data.action == "bet_success") {
+        // console.log(data)
+        setTurnOver(data.data.turnover);
       }
     });
   }, []);
@@ -90,18 +93,18 @@ const BotInformation = (props) => {
 
   useEffect(() => {
     getUserBot();
-    getBotInfo()
+    getBotInfo();
   }, [auth.isLoggedIn]);
 
   async function setBotData(data) {
-    console.log(data)
+    console.log(data);
     dispatch(
       bot_setting_init({
         ...botSetting,
         profit_wallet: data.profit_wallet,
         deposite_count: data.deposite_count,
         status: data.status,
-        is_opposite: data.is_opposite
+        is_opposite: data.is_opposite,
       })
     );
   }
@@ -123,7 +126,7 @@ const BotInformation = (props) => {
       let indexMap = {};
       let previousValue = 0;
       let newData = _.sortBy(data, ["id"], ["ASC"]);
-      console.log(newData)
+      console.log(newData);
       // let newData = data.sort(compare);
       setRawData(newData);
       newData.forEach((element) => {
@@ -553,7 +556,10 @@ const BotInformation = (props) => {
               }</span> บาท
               </div>
               <div>สวนบอท:</div><div><span>${
-                rawData[realData].user_bet == rawData[realData].bot_transaction.bet?'ไม่': 'ใช่'
+                rawData[realData].user_bet ==
+                rawData[realData].bot_transaction.bet
+                  ? "ไม่"
+                  : "ใช่"
               }</span>
               </div>`;
               } else {
@@ -571,7 +577,10 @@ const BotInformation = (props) => {
               }</span> บาท
               </div>
               <div>สวนบอท:</div><div><span>${
-                rawData[realData].user_bet == rawData[realData].bot_transaction.bet?'ไม่': 'ใช่'
+                rawData[realData].user_bet ==
+                rawData[realData].bot_transaction.bet
+                  ? "ไม่"
+                  : "ใช่"
               }</span>
               </div>`;
               }
@@ -614,17 +623,51 @@ const BotInformation = (props) => {
   function renderBetOppositeButton() {
     if (botSetting.is_opposite) {
       return (
-        <Button color="red" onClick={() => betOpposite(false)} disabled={botSetting.status != 2}>
+        <Button
+          color="red"
+          onClick={() => betOpposite(false)}
+          disabled={botSetting.status != 2}
+        >
           <i className="fal fa-chart-line-down fa-lg" />
         </Button>
-        
       );
     }
     return (
-      <Button color="teal" onClick={() => betOpposite(true)} disabled={botSetting.status != 2}>
+      <Button
+        color="teal"
+        onClick={() => betOpposite(true)}
+        disabled={botSetting.status != 2}
+      >
         <i className="fal fa-chart-line fa-lg" />
       </Button>
     );
+  }
+
+  async function changeBetSide(bet_side) {
+    try {
+      setIsLoading(true);
+
+      const {
+        data: { success },
+      } = await axios.post(SET_BET_SIDE_URL, {
+        username: auth.username,
+        bet_side,
+      });
+      if (success) {
+        dispatch(
+          bot_setting_set({
+            ...botSetting,
+            bet_side,
+          })
+        );
+      }
+    } catch (error) {
+      console.log(
+        "BotInfomation Component | Error while call changeBetSide()",
+        error
+      );
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -674,7 +717,11 @@ const BotInformation = (props) => {
               <div>
                 <Popup
                   position="left"
-                  content={botSetting.is_opposite?"กดเพื่อเล่นตามบอท":"กดเพื่อเล่นสวนบอท"}
+                  content={
+                    botSetting.is_opposite
+                      ? "กดเพื่อเล่นตามบอท"
+                      : "กดเพื่อเล่นสวนบอท"
+                  }
                   trigger={renderBetOppositeButton()}
                 />
               </div>
@@ -835,6 +882,21 @@ const BotInformation = (props) => {
                   </Card.Description>
                   <Card.Meta>{renderBetSide()}</Card.Meta>
                 </Card.Content>
+                {botSetting.id && (
+                  <Card.Content extra>
+                    <Button
+                      color="teal"
+                      icon
+                      labelPosition="left"
+                      fluid
+                      loading={isLoading}
+                      onClick={() => setIsShownConfirmResetBetSide(true)}
+                    >
+                      เปลี่ยน
+                      <Icon name="undo" />
+                    </Button>
+                  </Card.Content>
+                )}
               </Card>
               <Card>
                 <Card.Content>
@@ -947,6 +1009,40 @@ const BotInformation = (props) => {
             <Icon name="checkmark" />
             แบบกำไร + ขาดทุน
           </Button>
+        </Modal.Actions>
+      </Modal>
+
+      <Modal
+        basic
+        onClose={() => setIsShownConfirmResetBetSide(false)}
+        onOpen={() => setIsShownConfirmResetBetSide(true)}
+        open={isShownConfirmResetBetSide}
+        size="small"
+        closeOnDimmerClick={false}
+      >
+        <Header icon>เลือกรูปแบบการเล่น</Header>
+        <Modal.Actions>
+          <Button onClick={() => setIsShownConfirmResetBetSide(false)}>
+            <Icon name="remove" /> ยกเลิก
+          </Button>
+          {botSetting.bet_side !== 1 && (
+            <Button color="teal" onClick={() => changeBetSide(1)}>
+              <Icon name="checkmark" />
+              Player/Banker
+            </Button>
+          )}
+          {botSetting.bet_side !== 2 && (
+            <Button color="teal" onClick={() => changeBetSide(2)}>
+              <Icon name="checkmark" />
+              Player Only
+            </Button>
+          )}
+          {botSetting.bet_side !== 3 && (
+            <Button color="teal" onClick={() => changeBetSide(3)}>
+              <Icon name="checkmark" />
+              Banker Only
+            </Button>
+          )}
         </Modal.Actions>
       </Modal>
     </>
