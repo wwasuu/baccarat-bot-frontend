@@ -156,7 +156,11 @@ export default function BotGrapj() {
         },
       },
       legend: {
-        show: false,
+        show: true,
+        labels: {
+          colors: 'white',
+        },
+        position: 'top',
       },
       title: {
         text: "ภาพรวมบอท",
