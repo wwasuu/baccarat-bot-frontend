@@ -1,4 +1,4 @@
 export default {
-    API_URL: "http://localhost"
+    API_URL: "https://api.ibot.bet"
     
 }
